@@ -56,13 +56,13 @@ function Admin() {
     const getStatusBadgeColor = (status: string) => {
         switch (status) {
             case 'Pending':
-                return 'bg-yellow-100 text-yellow-800';
+                return 'badge badge-warning';
             case 'Approved':
-                return 'bg-green-100 text-green-800';
+                return 'badge badge-success';
             case 'Paid':
-                return 'bg-blue-100 text-blue-800';
+                return 'badge badge-info';
             default:
-                return 'bg-gray-100 text-gray-800';
+                return 'badge';
         }
     };
 
@@ -97,24 +97,24 @@ function Admin() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-base-100">
             {/* Header */}
-            <div className="bg-white shadow">
+            <div className="bg-base-200 shadow">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex justify-between items-center">
-                        <h1 className="text-2xl font-bold text-gray-900">
+                        <h1 className="text-2xl font-bold text-base-content">
                             Admin - Alla kvitton
                         </h1>
                         <div className="flex gap-4">
                             <button
                                 onClick={() => navigate('/dashboard')}
-                                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                                className="btn btn-secondary btn-sm"
                             >
                                 Till Dashboard
                             </button>
                             <button
                                 onClick={handleLogout}
-                                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                                className="btn btn-secondary btn-sm"
                             >
                                 Logga ut
                             </button>
@@ -125,27 +125,27 @@ function Admin() {
 
             {/* Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <div className="card bg-base-100 shadow-xl overflow-hidden">
                     {isLoading ? (
                         <div className="p-8 text-center">
-                            <p className="text-gray-600">Laddar kvitton...</p>
+                            <p className="text-base-content/70">Laddar kvitton...</p>
                         </div>
                     ) : error ? (
                         <div className="p-8">
-                            <div className="rounded-md bg-red-50 p-4">
-                                <p className="text-sm text-red-800">{error}</p>
+                            <div className="alert alert-error">
+                                <p className="text-sm">{error}</p>
                             </div>
                         </div>
                     ) : receipts.length === 0 ? (
                         <div className="p-8 text-center">
-                            <p className="text-gray-600">Inga kvitton finns ännu.</p>
+                            <p className="text-base-content/70">Inga kvitton finns ännu.</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                            <table className="table w-full">
+                                <thead className="bg-base-200">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-base-content uppercase tracking-wider">
                                             Användare
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -171,28 +171,28 @@ function Admin() {
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="divide-y divide-base-300">
                                     {receipts.map((receipt) => {
                                         const userInfo = receipt.expand?.user_id;
                                         return (
-                                            <tr key={receipt.id} className="hover:bg-gray-50">
+                                            <tr key={receipt.id} className="hover:bg-base-200">
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-medium text-gray-900">
+                                                    <div className="text-sm font-medium text-base-content">
                                                         {userInfo?.name || userInfo?.email || 'N/A'}
                                                     </div>
-                                                    <div className="text-sm text-gray-500">
+                                                    <div className="text-sm text-base-content/70">
                                                         {userInfo?.email || ''}
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-900">
+                                                    <div className="text-sm text-base-content">
                                                         {userInfo?.bank_name || 'N/A'}
                                                     </div>
-                                                    <div className="text-sm text-gray-500">
+                                                    <div className="text-sm text-base-content/70">
                                                         {userInfo?.account_number || 'N/A'}
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content">
                                                     {formatDate(receipt.date_for_slabb)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -223,7 +223,7 @@ function Admin() {
                                                                     updateReceiptStatus(receipt.id, 'Approved')
                                                                 }
                                                                 disabled={updatingId === receipt.id}
-                                                                className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                                                                className="btn btn-success btn-xs"
                                                             >
                                                                 {updatingId === receipt.id
                                                                     ? 'Uppdaterar...'
@@ -236,7 +236,7 @@ function Admin() {
                                                                     updateReceiptStatus(receipt.id, 'Paid')
                                                                 }
                                                                 disabled={updatingId === receipt.id}
-                                                                className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                                                                className="btn btn-info btn-xs"
                                                             >
                                                                 {updatingId === receipt.id
                                                                     ? 'Uppdaterar...'
@@ -248,7 +248,7 @@ function Admin() {
                                                                 href={getReceiptImageUrl(receipt) || '#'}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 text-center"
+                                                                className="btn btn-ghost btn-xs text-center"
                                                             >
                                                                 Visa kvitto
                                                             </a>

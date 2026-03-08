@@ -43,13 +43,13 @@ function Dashboard() {
     const getStatusBadgeColor = (status: string) => {
         switch (status) {
             case 'Pending':
-                return 'bg-yellow-100 text-yellow-800';
+                return 'badge badge-warning';
             case 'Approved':
-                return 'bg-green-100 text-green-800';
+                return 'badge badge-success';
             case 'Paid':
-                return 'bg-blue-100 text-blue-800';
+                return 'badge badge-info';
             default:
-                return 'bg-gray-100 text-gray-800';
+                return 'badge';
         }
     };
 
@@ -63,24 +63,24 @@ function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-base-100">
             {/* Header */}
-            <div className="bg-white shadow">
+            <div className="bg-base-200 shadow">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex justify-between items-center">
-                        <h1 className="text-2xl font-bold text-gray-900">
+                        <h1 className="text-2xl font-bold text-base-content">
                             Mina kvitton
                         </h1>
                         <div className="flex gap-4">
                             <button
                                 onClick={() => navigate('/submit')}
-                                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                                className="btn btn-primary btn-sm"
                             >
                                 Skicka in nytt kvitto
                             </button>
                             <button
                                 onClick={handleLogout}
-                                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                                className="btn btn-secondary btn-sm"
                             >
                                 Logga ut
                             </button>
@@ -91,64 +91,64 @@ function Dashboard() {
 
             {/* Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <div className="card bg-base-100 shadow-xl">
                     {isLoading ? (
                         <div className="p-8 text-center">
-                            <p className="text-gray-600">Laddar kvitton...</p>
+                            <p className="text-base-content/70">Laddar kvitton...</p>
                         </div>
                     ) : error ? (
                         <div className="p-8">
-                            <div className="rounded-md bg-red-50 p-4">
-                                <p className="text-sm text-red-800">{error}</p>
+                            <div className="alert alert-error">
+                                <p className="text-sm">{error}</p>
                             </div>
                         </div>
                     ) : receipts.length === 0 ? (
                         <div className="p-8 text-center">
-                            <p className="text-gray-600 mb-4">
+                            <p className="text-base-content/70 mb-4">
                                 Du har inga kvitton ännu.
                             </p>
                             <button
                                 onClick={() => navigate('/submit')}
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                                className="btn btn-primary btn-sm"
                             >
                                 Skicka in ditt första kvitto
                             </button>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                            <table className="table w-full">
+                                <thead className="bg-base-200">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-base-content uppercase tracking-wider">
                                             Datum
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-base-content uppercase tracking-wider">
                                             Slabb
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-base-content uppercase tracking-wider">
                                             Anledning
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-base-content uppercase tracking-wider">
                                             Belopp
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-base-content uppercase tracking-wider">
                                             Status
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="divide-y divide-base-300">
                                     {receipts.map((receipt) => (
-                                        <tr key={receipt.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <tr key={receipt.id} className="hover:bg-base-200">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content">
                                                 {formatDate(receipt.date_for_slabb)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content">
                                                 {receipt.slabb}
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">
+                                            <td className="px-6 py-4 text-sm text-base-content">
                                                 {receipt.anledning}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content">
                                                 {Number(receipt.amount).toFixed(2)} kr
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
