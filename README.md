@@ -50,3 +50,60 @@
 - [ ] Testa admin-flödet för godkännande.
 - [ ] Gör en soft launch till några förmän för att samla feedback.
 - [ ] Full launch till nationen!
+
+# Frontend-arkitektur: React + Vite
+
+Detta repository innehåller frontend-kod och deployment-konfiguration för Helsingkrona Kvitto-systemet. PocketBase-backend kör fristående på Linode-servern i `/root/pb/pocketbase`.
+
+## Mappstruktur
+
+```text
+kvitto-helsingkrona-frontend/
+├── nginx/                    <-- INFRASTRUKTUR
+│   └── kvitto.conf           <-- Behåll Nginx-konfigurationen här för versionshantering
+│
+├── public/                   <-- Statiska assets (favicon, nationslogo)
+│
+├── src/                      <-- FRONTEND (React + Vite)
+│   ├── assets/               <-- Global CSS och lokala bilder
+│   │   └── index.css         <-- Där du importerar Tailwind CSS
+│   │
+│   ├── components/           <-- Återanvändbara UI-delar
+│   │   ├── ui/               <-- Grundläggande Tailwind-komponenter (Buttons, Inputs, Cards)
+│   │   └── layout/           <-- Navbar, Sidebar, wrappers för sidor
+│   │
+│   ├── hooks/                <-- Egna React-hooks
+│   │   └── useAuth.ts        <-- Hook för att lyssna på PocketBase login-state
+│   │
+│   ├── lib/                  <-- Utilities och setup
+│   │   ├── pocketbase.ts     <-- Initialiserar PocketBase-anslutningen
+│   │   └── utils.ts          <-- Hjälpfunktioner (t.ex. formatering av datum eller valuta)
+│   │
+│   ├── pages/                <-- Sidkomponenter (mappas direkt till URL:er via React Router)
+│   │   ├── Home.tsx          <-- Landningssida
+│   │   ├── Login.tsx         <-- Login & Registration
+│   │   ├── Dashboard.tsx     <-- Worker-vy: tidigare kvitton
+│   │   ├── SubmitReceipt.tsx <-- "Slabb"-formulär för kvitto
+│   │   └── Admin.tsx         <-- Admin-vy: alla kvitton och user-profiler
+│   │
+│   ├── App.tsx               <-- Huvudkomponent (där du sätter upp React Router)
+│   └── main.tsx              <-- React DOM-entrypoint
+│
+├── .env                      <-- Miljovariabler (t.ex. VITE_PB_URL=[https://kvitto.helsingkrona.se](https://kvitto.helsingkrona.se))
+├── index.html                <-- Vites HTML-entrypoint
+├── package.json              <-- React/Node-dependencies
+├── tailwind.config.js        <-- Tailwind CSS-konfiguration
+└── vite.config.ts            <-- Vite builder-konfiguration
+```
+
+## Viktiga arkitekturnoter
+
+1. **Fristående backend:** Eftersom PocketBase kör direkt från `/root/pb/pocketbase` på Linode-servern trackas den inte i detta frontend-repository. React-appen ansluter via miljövariabeln `VITE_PB_URL`.
+2. **Routing:** Vi använder `react-router-dom` i `App.tsx` för att hantera client-side routing (t.ex. att mappa `/admin` till komponenten `Admin.tsx`).
+3. **Komponentorganisation:** Katalogen `pages/` separerar fulla sidvyer (som Dashboard) från mindre byggblock (som en Button i `components/ui/`).
+
+## Deployment-flöde
+
+1. **Build:** `npm run build` kompilerar mappen `src/` till statiska HTML-, CSS- och JS-filer i mappen `dist/`.
+2. **Serve:** Nginx serverar dessa statiska filer när en användare besöker `kvitto.helsingkrona.se`.
+3. **Proxy:** Nginx är konfigurerad att vidarebefordra databas-/API-requests direkt till den lokala PocketBase-instansen på servern.
