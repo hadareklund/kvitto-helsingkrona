@@ -25,26 +25,25 @@ interface AuthState {
 }
 
 export function useAuth() {
-    const [authState, setAuthState] = useState<AuthState>({
-        user: null,
-        isLoading: true,
+    const [authState, setAuthState] = useState<AuthState>(() => {
+        if (DEV_AUTH_BYPASS) {
+            const storedUser = localStorage.getItem(DEV_AUTH_STORAGE_KEY);
+            return {
+                user: storedUser ? (JSON.parse(storedUser) as RecordModel) : null,
+                isLoading: false,
+            };
+        }
+
+        return {
+            user: pb.authStore.model,
+            isLoading: false,
+        };
     });
 
     useEffect(() => {
         if (DEV_AUTH_BYPASS) {
-            const storedUser = localStorage.getItem(DEV_AUTH_STORAGE_KEY);
-            setAuthState({
-                user: storedUser ? (JSON.parse(storedUser) as RecordModel) : null,
-                isLoading: false,
-            });
             return;
         }
-
-        // Initial auth state
-        setAuthState({
-            user: pb.authStore.model,
-            isLoading: false,
-        });
 
         // Listen for auth changes
         const unsubscribe = pb.authStore.onChange((_token, model) => {

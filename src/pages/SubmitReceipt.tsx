@@ -16,7 +16,7 @@ function SubmitReceipt() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
 
-    const { user } = useAuth();
+    const { user, isLoading: isAuthLoading } = useAuth();
     const navigate = useNavigate();
 
     const slabbOptions = [
@@ -103,6 +103,14 @@ function SubmitReceipt() {
             setIsLoading(false);
         }
     };
+
+    if (isAuthLoading) {
+        return (
+            <div className="min-h-screen bg-base-100 flex items-center justify-center">
+                <span className="loading loading-spinner loading-lg text-primary" />
+            </div>
+        );
+    }
 
     if (!user) {
         return (

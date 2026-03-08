@@ -17,7 +17,7 @@ function Admin() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
-    const { user, logout } = useAuth();
+    const { user, logout, isLoading: isAuthLoading } = useAuth();
     const navigate = useNavigate();
 
     const fetchReceipts = async () => {
@@ -36,6 +36,10 @@ function Admin() {
     };
 
     useEffect(() => {
+        if (isAuthLoading) {
+            return;
+        }
+
         if (!user) {
             navigate('/login');
             return;
@@ -54,7 +58,7 @@ function Admin() {
         // }
 
         fetchReceipts();
-    }, [user, navigate]);
+    }, [user, navigate, isAuthLoading]);
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -99,6 +103,14 @@ function Admin() {
         logout();
         navigate('/login');
     };
+
+    if (isAuthLoading) {
+        return (
+            <div className="min-h-screen bg-base-100 flex items-center justify-center">
+                <span className="loading loading-spinner loading-lg text-primary" />
+            </div>
+        );
+    }
 
     if (!user) {
         return null;
