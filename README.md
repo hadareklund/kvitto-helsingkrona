@@ -1,53 +1,52 @@
-# Project Plan: Helsingkrona Kvitto Digitalization
+# Projektplan: Digitalisering av Helsingkronas kvittohantering
 
-**Goal:** Move receipt handling to a digital platform to reduce paper, streamline the process for workers/förmän, and allow submissions outside of office hours.
+**Mål:** Flytta kvittohanteringen till en digital plattform för att minska pappersanvändning, effektivisera processen för workers/förmän och möjliggöra inskick utanför kontorstid.
 
 **Tech Stack:**
 * **Server:** Linode
 * **Reverse Proxy:** Nginx
 * **Database & Backend:** PocketBase
-* **Frontend:** React (Next.js or Vite)
+* **Frontend:** React (Vite)
 * **Styling:** Tailwind CSS
 
 ---
 
-## Phase 1: Infrastructure & Domain 🌐
-- [ ] Log into the domain registrar and add an `A Record` pointing `kvitto.helsingkrona.se` to the Linode server's IP address.
-- [ ] Install Nginx on the Linode server.
-- [ ] Configure Nginx as a reverse proxy to route traffic to the React frontend and the PocketBase backend.
-- [ ] Secure the domain with an SSL certificate using Certbot (Let's Encrypt).
+## Fas 1: Infrastruktur och domän
+- [ ] Logga in hos domänregistraren och lägg till en `A Record` som pekar `kvitto.helsingkrona.se` till Linode-serverns IP-adress.
+- [ ] Konfigurera Nginx som reverse proxy för att routa trafik till React-frontend (och PocketBase-backend - redan gjort?).
+- [ ] Säkra domänen med ett SSL-certifikat via Certbot (Let's Encrypt) (eller cloudflare om det är olika).
 
-## Phase 2: Database Setup (PocketBase) 🗄️
-- [ ] Install and start PocketBase on the Linode server.
-- [ ] **Configure `users` collection:**
-  - [ ] Add `bank_name` (Text).
-  - [ ] Add `account_number` (Text).
-  - [ ] Add `role` (Select: user, admin).
-- [ ] **Create `receipts` collection:**
-  - [ ] Add `user_id` (Relation -> `users`).
-  - [ ] Add `amount` (Number).
-  - [ ] Add `slabb` (Text/Select - e.g., Pub, Sittning).
-  - [ ] Add `anledning` (Text).
-  - [ ] Add `date_for_slabb` (Date/Time).
-  - [ ] Add `receipt_image` (File - restrict to images/PDFs, set max size).
-  - [ ] Add `status` (Select: Pending, Approved, Paid).
-- [ ] Set up PocketBase API Rules (e.g., users can only view their own receipts; admins can view all).
+## Fas 2: Databas-setup (PocketBase)
+- [ ] **Konfigurera `receipt_users` collection:**
+  - [ ] Lägg till `bank_name` (Text).
+  - [ ] Lägg till `account_number` (Text).
+  - [ ] Lägg till `role` (Select: user, admin).
+- [ ] **Skapa `receipts` collection:**
+  - [ ] Lägg till `user_id` (Relation -> `users`).
+  - [ ] Lägg till `amount` (Number).
+  - [ ] Lägg till `slabb` (Text/Select - t.ex. Pub, Sittning).
+  - [ ] Lägg till `anledning` (Text).
+  - [ ] Lägg till `date_for_slabb` (Date/Time).
+  - [ ] Lägg till `receipt_image` (File - begränsa till bilder/PDF:er, sätt maxstorlek).
+  - [ ] Lägg till `status` (Select: Pending, Approved, Paid).
+  - [ ] Lägg till `receipt_number` för att förhindra duplicering.
+- [ ] Sätt upp PocketBase API Rules (t.ex. att users bara kan se sina egna receipts, medan admins kan se alla).
 
-## Phase 3: Frontend Development (React + Tailwind) 💻
-- [ ] Initialize the React project and install Tailwind CSS.
-- [ ] Set up the PocketBase JavaScript SDK to handle authentication.
-- [ ] **Build Views/Pages:**
-  - [ ] Login & Registration page.
-  - [ ] Main Dashboard (for workers to see their past submissions and statuses).
-  - [ ] "Submit Receipt" Form (handles text inputs and the image file upload).
-  - [ ] Admin Dashboard (for Erik/you to view user profiles, bank details, and receipt history).
+## Fas 3: Frontend-utveckling (React + Tailwind)
+- [ ] Initiera React-projektet och installera Tailwind CSS.
+- [ ] Sätt upp PocketBase JavaScript SDK för hantering av autentisering.
+- [ ] **Bygg views/pages:**
+  - [ ] Login & Registration-sida.
+  - [ ] Huvuddashboard (för workers att se tidigare inskick och status).
+  - [ ] "Submit Receipt"-formulär (hanterar textfält och uppladdning av kvittobild).
+  - [ ] Admin Dashboard (för Erik/dig att se user-profiler, bankuppgifter och kvittohistorik).
 
-## Phase 4: Integrations & Notifications 📧
-- [ ] Set up an email notification trigger. (Using a PocketBase hook or a React API route with a service like Resend).
-- [ ] Ensure the email alerts the admin when a new receipt is submitted.
+## Fas 4: Integrationer och notiser
+- [ ] Sätt upp en email notification trigger (via en PocketBase-hook eller en React API route med en tjänst som Resend).
+- [ ] Säkerställ att email skickar notis till admin när ett nytt kvitto skickas in.
 
-## Phase 5: Testing & Launch 🚀
-- [ ] Test the mobile experience (crucial for workers taking photos of receipts on the fly).
-- [ ] Test the admin approval workflow.
-- [ ] Soft launch to a few förmän to gather feedback.
-- [ ] Full launch to the nation!
+## Fas 5: Testning och lansering
+- [ ] Testa mobilupplevelsen (avgörande för workers som fotar kvitton i farten).
+- [ ] Testa admin-flödet för godkännande.
+- [ ] Gör en soft launch till några förmän för att samla feedback.
+- [ ] Full launch till nationen!
