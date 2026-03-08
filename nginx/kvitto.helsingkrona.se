@@ -13,9 +13,12 @@ server {
     listen [::]:443 ssl http2;
     server_name kvitto.helsingkrona.se;
 
-    # SSL certificates (Cloudflare)
-    ssl_certificate /etc/ssl/certs/cloudflare.pem;
-    ssl_certificate_key /etc/ssl/private/cloudflare.key;
+    # FIXED: Ensure these paths match your actual certificates!
+    ssl_certificate /etc/ssl/cert.pem;
+    ssl_certificate_key /etc/ssl/key.pem;
+
+    # FIXED: Allow 10MB receipt image uploads
+    client_max_body_size 10M;
 
     # SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -44,8 +47,9 @@ server {
         add_header Cache-Control "public, immutable";
     }
 
-    # Proxy PocketBase API requests
-    location ~ ^/(api|_)/ {
+    # FIXED: Proxy ONLY the API to PocketBase. 
+    # The Admin UI (/_/) is removed so it stays hidden behind pb.helsingkrona.se's IP block.
+    location /api/ {
         proxy_pass http://127.0.0.1:8090;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
@@ -65,11 +69,6 @@ server {
 
     # Deny access to sensitive files
     location ~ /\. {
-        deny all;
-    }
-
-    # Deny access to environment files
-    location ~ ~$ {
         deny all;
     }
 }
