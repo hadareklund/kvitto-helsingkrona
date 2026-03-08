@@ -2,6 +2,23 @@ import { useState, useEffect } from 'react';
 import pb from '../lib/pocketbase';
 import type { RecordModel } from 'pocketbase';
 
+const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
+const DEV_AUTH_STORAGE_KEY = 'kvitto_dev_auth_user';
+
+function createDevUser(email: string): RecordModel {
+    const now = new Date().toISOString();
+    return {
+        id: 'dev-user',
+        collectionId: 'dev',
+        collectionName: 'users',
+        created: now,
+        updated: now,
+        email,
+        name: 'Utvecklare',
+        role: 'admin',
+    } as unknown as RecordModel;
+}
+
 interface AuthState {
     user: RecordModel | null;
     isLoading: boolean;
@@ -9,11 +26,20 @@ interface AuthState {
 
 export function useAuth() {
     const [authState, setAuthState] = useState<AuthState>({
-        user: pb.authStore.model,
+        user: null,
         isLoading: true,
     });
 
     useEffect(() => {
+        if (DEV_AUTH_BYPASS) {
+            const storedUser = localStorage.getItem(DEV_AUTH_STORAGE_KEY);
+            setAuthState({
+                user: storedUser ? (JSON.parse(storedUser) as RecordModel) : null,
+                isLoading: false,
+            });
+            return;
+        }
+
         // Initial auth state
         setAuthState({
             user: pb.authStore.model,
@@ -34,6 +60,16 @@ export function useAuth() {
     }, []);
 
     const login = async (email: string, password: string) => {
+        if (DEV_AUTH_BYPASS) {
+            const devUser = createDevUser(email || 'dev@helsingkrona.se');
+            localStorage.setItem(DEV_AUTH_STORAGE_KEY, JSON.stringify(devUser));
+            setAuthState({
+                user: devUser,
+                isLoading: false,
+            });
+            return { success: true, user: devUser };
+        }
+
         try {
             const authData = await pb.collection('users').authWithPassword(email, password);
             setAuthState({
@@ -48,6 +84,15 @@ export function useAuth() {
     };
 
     const logout = () => {
+        if (DEV_AUTH_BYPASS) {
+            localStorage.removeItem(DEV_AUTH_STORAGE_KEY);
+            setAuthState({
+                user: null,
+                isLoading: false,
+            });
+            return;
+        }
+
         pb.authStore.clear();
         setAuthState({
             user: null,

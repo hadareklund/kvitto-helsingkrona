@@ -4,6 +4,8 @@ import { useAuth } from '../hooks/useAuth';
 import pb from '../lib/pocketbase';
 import type { RecordModel } from 'pocketbase';
 
+const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
+
 interface ReceiptWithUser extends RecordModel {
     expand?: {
         user_id?: RecordModel;
@@ -36,6 +38,12 @@ function Admin() {
     useEffect(() => {
         if (!user) {
             navigate('/login');
+            return;
+        }
+
+        if (DEV_AUTH_BYPASS) {
+            setReceipts([]);
+            setIsLoading(false);
             return;
         }
 

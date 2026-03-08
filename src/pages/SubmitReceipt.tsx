@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import pb from '../lib/pocketbase';
 
+const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
+
 function SubmitReceipt() {
     const [amount, setAmount] = useState('');
     const [slabb, setSlabb] = useState('');
@@ -50,6 +52,23 @@ function SubmitReceipt() {
         setIsLoading(true);
 
         try {
+            if (DEV_AUTH_BYPASS) {
+                setSuccess(true);
+                setAmount('');
+                setSlabb('');
+                setAnledning('');
+                setDateForSlabb('');
+                setReceiptImage(null);
+
+                const fileInput = document.getElementById('receipt_image') as HTMLInputElement;
+                if (fileInput) fileInput.value = '';
+
+                setTimeout(() => {
+                    navigate('/dashboard');
+                }, 1000);
+                return;
+            }
+
             const formData = new FormData();
             formData.append('user_id', user.id);
             formData.append('amount', amount);
