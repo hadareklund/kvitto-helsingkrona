@@ -10,7 +10,7 @@ function createDevUser(email: string): RecordModel {
     return {
         id: 'dev-user',
         collectionId: 'dev',
-        collectionName: 'users',
+        collectionName: 'receipt_user',
         created: now,
         updated: now,
         email,
@@ -70,7 +70,7 @@ export function useAuth() {
         }
 
         try {
-            const authData = await pb.collection('users').authWithPassword(email, password);
+            const authData = await pb.collection('receipt_user').authWithPassword(email, password);
             setAuthState({
                 user: authData.record,
                 isLoading: false,
