@@ -19,6 +19,12 @@ function Admin() {
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedUserId, setSelectedUserId] = useState('');
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [pendingStatusChange, setPendingStatusChange] = useState<{
+        receiptId: string;
+        newStatus: string;
+        oldStatus: string;
+    } | null>(null);
     const { user, logout, isLoading: isAuthLoading } = useAuth();
     const navigate = useNavigate();
 
@@ -141,6 +147,33 @@ function Admin() {
         }
     };
 
+    const handleStatusChange = (receiptId: string, currentStatus: string, newStatus: string) => {
+        if (newStatus === currentStatus) {
+            return;
+        }
+
+        // If downgrading from Paid, show confirmation
+        if (currentStatus === 'Paid' && (newStatus === 'Pending' || newStatus === 'Approved')) {
+            setPendingStatusChange({ receiptId, newStatus, oldStatus: currentStatus });
+            setShowConfirmModal(true);
+        } else {
+            updateReceiptStatus(receiptId, newStatus);
+        }
+    };
+
+    const confirmStatusChange = () => {
+        if (pendingStatusChange) {
+            updateReceiptStatus(pendingStatusChange.receiptId, pendingStatusChange.newStatus);
+        }
+        setShowConfirmModal(false);
+        setPendingStatusChange(null);
+    };
+
+    const cancelStatusChange = () => {
+        setShowConfirmModal(false);
+        setPendingStatusChange(null);
+    };
+
     const updateReceiptStatus = async (receiptId: string, newStatus: string) => {
         setUpdatingId(receiptId);
         try {
@@ -163,8 +196,13 @@ function Admin() {
         }
 
         const fileName = String(receipt.receipt_image);
-        const collectionName = receipt.collectionName || 'receipts';
-        return `/api/files/${collectionName}/${receipt.id}/${fileName}`;
+        const collectionId = String(receipt.collectionId || '');
+
+        if (!collectionId || !receipt.id) {
+            return null;
+        }
+
+        return `/api/files/${collectionId}/${receipt.id}/${encodeURIComponent(fileName)}?token=`;
     };
 
     const handleLogout = () => {
@@ -358,42 +396,24 @@ function Admin() {
                                                         {Number(receipt.amount).toFixed(2)} kr
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span
-                                                            className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(
-                                                                receipt.status
-                                                            )}`}
+                                                        <select
+                                                            className={`select select-bordered select-xs ${getStatusBadgeColor(receipt.status)}`}
+                                                            value={receipt.status}
+                                                            onChange={(e) =>
+                                                                handleStatusChange(receipt.id, receipt.status, e.target.value)
+                                                            }
+                                                            disabled={updatingId === receipt.id}
                                                         >
-                                                            {receipt.status}
-                                                        </span>
+                                                            <option value="Pending">Pending</option>
+                                                            <option value="Approved">Approved</option>
+                                                            <option value="Paid">Paid</option>
+                                                        </select>
+                                                        {updatingId === receipt.id && (
+                                                            <span className="loading loading-spinner loading-xs ml-2"></span>
+                                                        )}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                         <div className="flex flex-col gap-1">
-                                                            {receipt.status === 'Pending' && (
-                                                                <button
-                                                                    onClick={() =>
-                                                                        updateReceiptStatus(receipt.id, 'Approved')
-                                                                    }
-                                                                    disabled={updatingId === receipt.id}
-                                                                    className="btn btn-success btn-xs"
-                                                                >
-                                                                    {updatingId === receipt.id
-                                                                        ? 'Uppdaterar...'
-                                                                        : 'Godkänn'}
-                                                                </button>
-                                                            )}
-                                                            {receipt.status === 'Approved' && (
-                                                                <button
-                                                                    onClick={() =>
-                                                                        updateReceiptStatus(receipt.id, 'Paid')
-                                                                    }
-                                                                    disabled={updatingId === receipt.id}
-                                                                    className="btn btn-info btn-xs"
-                                                                >
-                                                                    {updatingId === receipt.id
-                                                                        ? 'Uppdaterar...'
-                                                                        : 'Markera betald'}
-                                                                </button>
-                                                            )}
                                                             {receipt.receipt_image && (
                                                                 <a
                                                                     href={getReceiptImageUrl(receipt) || '#'}
@@ -422,7 +442,29 @@ function Admin() {
                     )}
                 </div>
             </div>
-        </div>
+            {/* Confirmation Modal */}
+            {showConfirmModal && (
+                <div className="modal modal-open">
+                    <div className="modal-box">
+                        <h3 className="font-bold text-lg">Bekräfta statusändring</h3>
+                        <p className="py-4">
+                            Du är på väg att ändra status från <strong>{pendingStatusChange?.oldStatus}</strong> till{' '}
+                            <strong>{pendingStatusChange?.newStatus}</strong>.
+                        </p>
+                        <p className="text-warning">
+                            ⚠️ Detta innebär att ett kvitto som markerats som betalt kommer att återgå till en tidigare status.
+                        </p>
+                        <div className="modal-action">
+                            <button className="btn btn-ghost" onClick={cancelStatusChange}>
+                                Avbryt
+                            </button>
+                            <button className="btn btn-warning" onClick={confirmStatusChange}>
+                                Bekräfta ändring
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}        </div>
     );
 }
 
