@@ -34,14 +34,16 @@ function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-base-200 flex items-center justify-center px-4 py-8">
-            <div className="w-full max-w-md">
-                <div className="card bg-base-100 shadow-xl border border-base-300">
-                    <div className="card-body gap-5">
-                        <div className="text-center space-y-2">
+        <div className="hero min-h-screen bg-base-200 px-4 py-8">
+            <div className="hero-content w-full max-w-md">
+                <div className="card w-full bg-base-100 shadow-2xl border border-base-300">
+                    <div className="card-body gap-6 p-6 sm:p-8">
+                        <div className="text-center space-y-3">
                             <div className="badge badge-primary badge-outline">Helsingkrona</div>
-                            <h1 className="text-3xl font-bold text-base-content">Kvittoportalen</h1>
-                            <p className="text-base-content/70">Logga in för att hantera dina kvitton</p>
+                            <h1 className="text-3xl sm:text-4xl font-bold text-base-content">Kvittoportalen</h1>
+                            <p className="text-sm sm:text-base text-base-content/70">
+                                Logga in för att hantera dina kvitton
+                            </p>
                         </div>
 
                         {error && (
@@ -51,8 +53,8 @@ function Login() {
                         )}
 
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <label className="form-control w-full">
-                                <span className="label-text text-base-content">E-postadress</span>
+                            <label className="form-control w-full gap-2">
+                                <span className="label-text font-medium text-base-content">E-postadress</span>
                                 <input
                                     id="email-address"
                                     name="email"
@@ -61,13 +63,13 @@ function Login() {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="input input-bordered w-full"
+                                    className="input input-bordered input-md w-full"
                                     placeholder="namn@helsingkrona.se"
                                 />
                             </label>
 
-                            <label className="form-control w-full">
-                                <span className="label-text text-base-content">Lösenord</span>
+                            <label className="form-control w-full gap-2">
+                                <span className="label-text font-medium text-base-content">Lösenord</span>
                                 <input
                                     id="password"
                                     name="password"
@@ -76,13 +78,24 @@ function Login() {
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="input input-bordered w-full"
+                                    className="input input-bordered input-md w-full"
                                     placeholder="••••••••"
                                 />
                             </label>
 
-                            <button type="submit" disabled={isLoading} className="btn btn-primary w-full">
-                                {isLoading ? 'Loggar in...' : 'Logga in'}
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="btn btn-primary btn-block mt-2"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <span className="loading loading-spinner loading-sm" />
+                                        Loggar in...
+                                    </>
+                                ) : (
+                                    'Logga in'
+                                )}
                             </button>
                         </form>
                     </div>
