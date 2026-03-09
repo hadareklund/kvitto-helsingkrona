@@ -114,7 +114,9 @@ function ReceiptDetail() {
         }
 
         const queryString = params.toString();
-        return `/api/files/${record.collectionId}/${record.id}/${encodeURIComponent(fileName)}${queryString ? `?${queryString}` : ''
+        // Use collectionName (not collectionId) for PocketBase file API
+        const collectionName = record.collectionName || 'receipts';
+        return `/api/files/${collectionName}/${record.id}/${encodeURIComponent(fileName)}${queryString ? `?${queryString}` : ''
             }`;
     };
 
@@ -234,6 +236,15 @@ function ReceiptDetail() {
                             <div className="card-body">
                                 <h2 className="card-title">Kvitto-bild</h2>
                                 <div className="divider my-1" />
+                                {/* Debug info */}
+                                {receipt && (
+                                    <div className="text-xs text-base-content/50 mb-2 p-2 rounded bg-base-200 break-all">
+                                        <strong>Debug URL:</strong>{' '}
+                                        {useFallbackUrl
+                                            ? getReceiptImageFallbackUrl(receipt)
+                                            : getReceiptImageUrl(receipt)}
+                                    </div>
+                                )}
                                 {(getReceiptImageUrl(receipt) || getReceiptImageFallbackUrl(receipt)) ? (
                                     <>
                                         {getReceiptFileKind(receipt) === 'pdf' ? (
