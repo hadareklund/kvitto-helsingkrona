@@ -259,13 +259,22 @@ function Admin() {
                                     <span>
                                         Visar kvittohistorik for: {selectedUser.name || selectedUser.email}
                                     </span>
-                                    <button
-                                        type="button"
-                                        className="btn btn-ghost btn-xs"
-                                        onClick={() => setSelectedUserId('')}
-                                    >
-                                        Rensa filter
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={() => navigate(`/admin/users/${selectedUser.id}`)}
+                                        >
+                                            Oppna profil
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={() => setSelectedUserId('')}
+                                        >
+                                            Rensa filter
+                                        </button>
+                                    </div>
                                 </div>
                             )}
 
@@ -311,6 +320,15 @@ function Admin() {
                                                         <div className="text-sm text-base-content/70">
                                                             {userInfo?.email || ''}
                                                         </div>
+                                                        {userInfo?.id && (
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-ghost btn-xs mt-1"
+                                                                onClick={() => navigate(`/admin/users/${userInfo.id}`)}
+                                                            >
+                                                                Oppna profil
+                                                            </button>
+                                                        )}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-base-content">

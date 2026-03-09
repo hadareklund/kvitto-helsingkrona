@@ -1,9 +1,18 @@
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+
 function Home() {
-    return (
-        <div>
-            <h1>Home</h1>
-        </div>
-    );
+    const { isAuthenticated, isLoading } = useAuth();
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <span className="loading loading-spinner loading-lg" />
+            </div>
+        );
+    }
+
+    return <Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />;
 }
 
 export default Home;

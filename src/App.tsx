@@ -4,6 +4,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import SubmitReceipt from './pages/SubmitReceipt';
 import Admin from './pages/Admin';
+import ReceiptDetail from './pages/ReceiptDetail';
+import AdminUserProfile from './pages/AdminUserProfile';
 import './App.css';
 
 function App() {
@@ -15,6 +17,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/submit" element={<SubmitReceipt />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/receipt/:receiptId" element={<ReceiptDetail />} />
+        <Route path="/admin/users/:userId" element={<AdminUserProfile />} />
       </Routes>
     </BrowserRouter>
   );
