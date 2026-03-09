@@ -15,10 +15,8 @@ function ReceiptDetail() {
     const navigate = useNavigate();
     const { user, logout, isLoading: isAuthLoading } = useAuth();
     const [receipt, setReceipt] = useState<ReceiptWithUser | null>(null);
-    const [fileToken, setFileToken] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
-    const [useFallbackUrl, setUseFallbackUrl] = useState(false);
 
     useEffect(() => {
         if (isAuthLoading) {
@@ -51,9 +49,6 @@ function ReceiptDetail() {
                     return;
                 }
 
-                // Needed when PocketBase files are protected by API rules.
-                const token = await pb.files.getToken().catch(() => '');
-                setFileToken(token);
                 setReceipt(record);
             } catch (err) {
                 console.error('Error fetching receipt details:', err);
@@ -65,10 +60,6 @@ function ReceiptDetail() {
 
         fetchReceipt();
     }, [receiptId, user, isAuthLoading, navigate]);
-
-    useEffect(() => {
-        setUseFallbackUrl(false);
-    }, [receiptId]);
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -89,58 +80,23 @@ function ReceiptDetail() {
     };
 
     const getReceiptImageUrl = (record: RecordModel) => {
-        const rawFile = record.receipt_image;
-        if (!rawFile) {
+        if (!record.receipt_image) {
             return null;
         }
 
-        const fileName = Array.isArray(rawFile) ? rawFile[0] : String(rawFile);
-        if (!fileName) {
-            return null;
-        }
-
-        return pb.files.getUrl(record, fileName, fileToken ? { token: fileToken } : {});
-    };
-
-    const getReceiptImageFallbackUrl = (record: RecordModel) => {
-        const fileName = getReceiptFileName(record);
-        if (!fileName) {
-            return null;
-        }
-
-        const params = new URLSearchParams();
-        if (fileToken) {
-            params.set('token', fileToken);
-        }
-
-        const queryString = params.toString();
-        // Use collectionName (not collectionId) for PocketBase file API
+        const fileName = String(record.receipt_image);
         const collectionName = record.collectionName || 'receipts';
-        return `/api/files/${collectionName}/${record.id}/${encodeURIComponent(fileName)}${queryString ? `?${queryString}` : ''
-            }`;
+
+        return `/api/files/${collectionName}/${record.id}/${fileName}`;
     };
 
-    const getReceiptFileName = (record: RecordModel) => {
-        const rawFile = record.receipt_image;
-        if (!rawFile) {
-            return '';
-        }
-
-        if (Array.isArray(rawFile)) {
-            return String(rawFile[0] || '');
-        }
-
-        return String(rawFile);
+    const isImageFile = (filename: string) => {
+        const ext = filename.toLowerCase().split('.').pop();
+        return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '');
     };
 
-    const getReceiptFileKind = (record: RecordModel) => {
-        const fileName = getReceiptFileName(record).toLowerCase();
-
-        if (fileName.endsWith('.pdf')) {
-            return 'pdf';
-        }
-
-        return 'image';
+    const isPdfFile = (filename: string) => {
+        return filename.toLowerCase().endsWith('.pdf');
     };
 
     const handleLogout = () => {
@@ -236,64 +192,36 @@ function ReceiptDetail() {
                             <div className="card-body">
                                 <h2 className="card-title">Kvitto-bild</h2>
                                 <div className="divider my-1" />
-                                {/* Debug info */}
-                                {receipt && (
-                                    <div className="text-xs text-base-content/50 mb-2 p-2 rounded bg-base-200 break-all">
-                                        <strong>Debug URL:</strong>{' '}
-                                        {useFallbackUrl
-                                            ? getReceiptImageFallbackUrl(receipt)
-                                            : getReceiptImageUrl(receipt)}
-                                    </div>
-                                )}
-                                {(getReceiptImageUrl(receipt) || getReceiptImageFallbackUrl(receipt)) ? (
+                                {getReceiptImageUrl(receipt) ? (
                                     <>
-                                        {getReceiptFileKind(receipt) === 'pdf' ? (
+                                        {isPdfFile(String(receipt.receipt_image)) ? (
                                             <div className="rounded-box bg-base-200 p-3">
                                                 <iframe
-                                                    src={
-                                                        (useFallbackUrl
-                                                            ? getReceiptImageFallbackUrl(receipt)
-                                                            : getReceiptImageUrl(receipt)) ||
-                                                        getReceiptImageFallbackUrl(receipt) ||
-                                                        ''
-                                                    }
+                                                    src={getReceiptImageUrl(receipt) || ''}
                                                     title="Kvitto PDF"
                                                     className="w-full rounded-lg h-[70vh]"
                                                 />
                                             </div>
-                                        ) : (
+                                        ) : isImageFile(String(receipt.receipt_image)) ? (
                                             <figure className="rounded-box bg-base-200 p-3">
                                                 <img
-                                                    src={
-                                                        (useFallbackUrl
-                                                            ? getReceiptImageFallbackUrl(receipt)
-                                                            : getReceiptImageUrl(receipt)) ||
-                                                        getReceiptImageFallbackUrl(receipt) ||
-                                                        ''
-                                                    }
+                                                    src={getReceiptImageUrl(receipt) || ''}
                                                     alt="Kvitto"
                                                     className="w-full rounded-lg object-contain max-h-[70vh]"
-                                                    onError={() => {
-                                                        if (!useFallbackUrl && getReceiptImageFallbackUrl(receipt)) {
-                                                            setUseFallbackUrl(true);
-                                                        }
-                                                    }}
                                                 />
                                             </figure>
+                                        ) : (
+                                            <div className="alert alert-info">
+                                                <span>Filformat stöds ej för förhandsgranskning.</span>
+                                            </div>
                                         )}
                                         <a
-                                            href={
-                                                (useFallbackUrl
-                                                    ? getReceiptImageFallbackUrl(receipt)
-                                                    : getReceiptImageUrl(receipt)) ||
-                                                getReceiptImageFallbackUrl(receipt) ||
-                                                '#'
-                                            }
+                                            href={getReceiptImageUrl(receipt) || '#'}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="btn btn-ghost btn-sm mt-3"
                                         >
-                                            Oppna fil i ny flik
+                                            Öppna fil i ny flik
                                         </a>
                                     </>
                                 ) : (

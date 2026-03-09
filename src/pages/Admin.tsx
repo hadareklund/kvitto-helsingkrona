@@ -158,13 +158,13 @@ function Admin() {
     };
 
     const getReceiptImageUrl = (receipt: RecordModel) => {
-        const rawFile = receipt.receipt_image;
-        if (!rawFile) return null;
+        if (!receipt.receipt_image) {
+            return null;
+        }
 
-        const fileName = Array.isArray(rawFile) ? rawFile[0] : String(rawFile);
-        if (!fileName) return null;
-
-        return pb.files.getUrl(receipt, fileName);
+        const fileName = String(receipt.receipt_image);
+        const collectionName = receipt.collectionName || 'receipts';
+        return `/api/files/${collectionName}/${receipt.id}/${fileName}`;
     };
 
     const handleLogout = () => {
