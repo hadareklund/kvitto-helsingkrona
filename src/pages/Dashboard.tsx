@@ -82,6 +82,8 @@ function Dashboard() {
         return null;
     }
 
+    const isAdmin = String(user.role || '').toLowerCase() === 'admin';
+
     return (
         <div className="min-h-screen bg-base-100">
             {/* Header */}
@@ -98,6 +100,14 @@ function Dashboard() {
                             >
                                 Skicka in nytt kvitto
                             </button>
+                            {isAdmin && (
+                                <button
+                                    onClick={() => navigate('/admin')}
+                                    className="btn btn-secondary btn-sm"
+                                >
+                                    Admin
+                                </button>
+                            )}
                             <button
                                 onClick={handleLogout}
                                 className="btn btn-secondary btn-sm"

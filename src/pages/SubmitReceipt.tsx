@@ -20,11 +20,16 @@ function SubmitReceipt() {
     const navigate = useNavigate();
 
     const slabbOptions = [
-        'Pub',
+        'Bak/Tvätt',
+        'Brunch',
+        'Eftersläpp',
         'Sittning',
-        'Förfest',
-        'Klubbmästeriet',
-        'Idrott',
+        'Fredmans',
+        'Cocktail',
+        'Winbladhs',
+        'Lunch',
+        'Novischperiod',
+        'Terminsstädning',
         'Övrigt',
     ];
 

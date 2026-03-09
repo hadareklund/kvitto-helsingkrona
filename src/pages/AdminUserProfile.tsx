@@ -254,7 +254,12 @@ function AdminUserProfile() {
                                             </thead>
                                             <tbody>
                                                 {receipts.map((receipt) => (
-                                                    <tr key={receipt.id} className="hover:bg-base-200">
+                                                    <tr
+                                                        key={receipt.id}
+                                                        className="hover:bg-base-200 cursor-pointer"
+                                                        onClick={() => navigate(`/receipt/${receipt.id}`)}
+                                                        title="Klicka for att se kvitto-detaljer"
+                                                    >
                                                         <td>{formatDate(String(receipt.date_for_slabb || ''))}</td>
                                                         <td>{String(receipt.slabb || '-')}</td>
                                                         <td>
@@ -274,7 +279,10 @@ function AdminUserProfile() {
                                                         <td>
                                                             <button
                                                                 className="btn btn-ghost btn-xs"
-                                                                onClick={() => navigate(`/receipt/${receipt.id}`)}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    navigate(`/receipt/${receipt.id}`);
+                                                                }}
                                                             >
                                                                 Oppna
                                                             </button>
