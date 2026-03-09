@@ -15,8 +15,10 @@ function ReceiptDetail() {
     const navigate = useNavigate();
     const { user, logout, isLoading: isAuthLoading } = useAuth();
     const [receipt, setReceipt] = useState<ReceiptWithUser | null>(null);
+    const [fileToken, setFileToken] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [useFallbackUrl, setUseFallbackUrl] = useState(false);
 
     useEffect(() => {
         if (isAuthLoading) {
@@ -49,6 +51,9 @@ function ReceiptDetail() {
                     return;
                 }
 
+                // Needed when PocketBase files are protected by API rules.
+                const token = await pb.files.getToken().catch(() => '');
+                setFileToken(token);
                 setReceipt(record);
             } catch (err) {
                 console.error('Error fetching receipt details:', err);
@@ -60,6 +65,10 @@ function ReceiptDetail() {
 
         fetchReceipt();
     }, [receiptId, user, isAuthLoading, navigate]);
+
+    useEffect(() => {
+        setUseFallbackUrl(false);
+    }, [receiptId]);
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -80,10 +89,57 @@ function ReceiptDetail() {
     };
 
     const getReceiptImageUrl = (record: RecordModel) => {
-        if (!record.receipt_image) {
+        const rawFile = record.receipt_image;
+        if (!rawFile) {
             return null;
         }
-        return pb.files.getUrl(record, record.receipt_image);
+
+        const fileName = Array.isArray(rawFile) ? rawFile[0] : String(rawFile);
+        if (!fileName) {
+            return null;
+        }
+
+        return pb.files.getUrl(record, fileName, fileToken ? { token: fileToken } : {});
+    };
+
+    const getReceiptImageFallbackUrl = (record: RecordModel) => {
+        const fileName = getReceiptFileName(record);
+        if (!fileName) {
+            return null;
+        }
+
+        const params = new URLSearchParams();
+        if (fileToken) {
+            params.set('token', fileToken);
+        }
+
+        const queryString = params.toString();
+        return `/api/files/${record.collectionId}/${record.id}/${encodeURIComponent(fileName)}${
+            queryString ? `?${queryString}` : ''
+        }`;
+    };
+
+    const getReceiptFileName = (record: RecordModel) => {
+        const rawFile = record.receipt_image;
+        if (!rawFile) {
+            return '';
+        }
+
+        if (Array.isArray(rawFile)) {
+            return String(rawFile[0] || '');
+        }
+
+        return String(rawFile);
+    };
+
+    const getReceiptFileKind = (record: RecordModel) => {
+        const fileName = getReceiptFileName(record).toLowerCase();
+
+        if (fileName.endsWith('.pdf')) {
+            return 'pdf';
+        }
+
+        return 'image';
     };
 
     const handleLogout = () => {
@@ -179,14 +235,57 @@ function ReceiptDetail() {
                             <div className="card-body">
                                 <h2 className="card-title">Kvitto-bild</h2>
                                 <div className="divider my-1" />
-                                {getReceiptImageUrl(receipt) ? (
-                                    <figure className="rounded-box bg-base-200 p-3">
-                                        <img
-                                            src={getReceiptImageUrl(receipt) || ''}
-                                            alt="Kvitto"
-                                            className="w-full rounded-lg object-contain max-h-[70vh]"
-                                        />
-                                    </figure>
+                                {(getReceiptImageUrl(receipt) || getReceiptImageFallbackUrl(receipt)) ? (
+                                    <>
+                                        {getReceiptFileKind(receipt) === 'pdf' ? (
+                                            <div className="rounded-box bg-base-200 p-3">
+                                                <iframe
+                                                    src={
+                                                        (useFallbackUrl
+                                                            ? getReceiptImageFallbackUrl(receipt)
+                                                            : getReceiptImageUrl(receipt)) ||
+                                                        getReceiptImageFallbackUrl(receipt) ||
+                                                        ''
+                                                    }
+                                                    title="Kvitto PDF"
+                                                    className="w-full rounded-lg h-[70vh]"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <figure className="rounded-box bg-base-200 p-3">
+                                                <img
+                                                    src={
+                                                        (useFallbackUrl
+                                                            ? getReceiptImageFallbackUrl(receipt)
+                                                            : getReceiptImageUrl(receipt)) ||
+                                                        getReceiptImageFallbackUrl(receipt) ||
+                                                        ''
+                                                    }
+                                                    alt="Kvitto"
+                                                    className="w-full rounded-lg object-contain max-h-[70vh]"
+                                                    onError={() => {
+                                                        if (!useFallbackUrl && getReceiptImageFallbackUrl(receipt)) {
+                                                            setUseFallbackUrl(true);
+                                                        }
+                                                    }}
+                                                />
+                                            </figure>
+                                        )}
+                                        <a
+                                            href={
+                                                (useFallbackUrl
+                                                    ? getReceiptImageFallbackUrl(receipt)
+                                                    : getReceiptImageUrl(receipt)) ||
+                                                getReceiptImageFallbackUrl(receipt) ||
+                                                '#'
+                                            }
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="btn btn-ghost btn-sm mt-3"
+                                        >
+                                            Oppna fil i ny flik
+                                        </a>
+                                    </>
                                 ) : (
                                     <div className="alert alert-info">
                                         <span>Ingen kvitto-bild uppladdad.</span>

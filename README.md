@@ -7,7 +7,7 @@
 * **Reverse Proxy:** Nginx
 * **Database & Backend:** PocketBase
 * **Frontend:** React (Vite)
-* **Styling:** Tailwind CSS
+* **Styling:** Tailwind CSS + daisyUI
 
 ---
 
@@ -17,12 +17,12 @@
 - [ ] Säkra domänen med ett SSL-certifikat via Certbot (Let's Encrypt) (eller cloudflare om det är olika).
 
 ## Fas 2: Databas-setup (PocketBase)
-- [ ] **Konfigurera `receipt_users` collection:**
+- [ ] **Konfigurera `receipt_user` collection:**
   - [ ] Lägg till `bank_name` (Text).
   - [ ] Lägg till `account_number` (Text).
   - [ ] Lägg till `role` (Select: user, admin).
 - [ ] **Skapa `receipts` collection:**
-  - [ ] Lägg till `user_id` (Relation -> `users`).
+  - [ ] Lägg till `user_id` (Relation -> `receipt_user`).
   - [ ] Lägg till `amount` (Number).
   - [ ] Lägg till `slabb` (Text/Select - t.ex. Pub, Sittning).
   - [ ] Lägg till `anledning` (Text).
@@ -32,14 +32,16 @@
   - [ ] Lägg till `receipt_number` för att förhindra duplicering.
 - [ ] Sätt upp PocketBase API Rules (t.ex. att users bara kan se sina egna receipts, medan admins kan se alla).
 
-## Fas 3: Frontend-utveckling (React + Tailwind)
+## Fas 3: Frontend-utveckling (React + Tailwind + daisyUI)
 - [ ] Initiera React-projektet och installera Tailwind CSS.
 - [ ] Sätt upp PocketBase JavaScript SDK för hantering av autentisering.
 - [ ] **Bygg views/pages:**
   - [ ] Login & Registration-sida.
-  - [ ] Huvuddashboard (för workers att se tidigare inskick och status).
+  - [ ] Huvuddashboard (för workers att se tidigare inskick och status, klickbar till kvitto-detaljer).
   - [ ] "Submit Receipt"-formulär (hanterar textfält och uppladdning av kvittobild).
   - [ ] Admin Dashboard (för Erik/dig att se user-profiler, bankuppgifter och kvittohistorik).
+  - [ ] Kvitto-detaljsida (`/receipt/:receiptId`) med kvitto-bild.
+  - [ ] Admin användarprofil (`/admin/users/:userId`) med kopierbara bankuppgifter.
 
 ## Fas 4: Integrationer och notiser
 - [ ] Sätt upp en email notification trigger (via en PocketBase-hook eller en React API route med en tjänst som Resend).
@@ -80,11 +82,13 @@ kvitto-helsingkrona-frontend/
 │   │   └── utils.ts          <-- Hjälpfunktioner (t.ex. formatering av datum eller valuta)
 │   │
 │   ├── pages/                <-- Sidkomponenter (mappas direkt till URL:er via React Router)
-│   │   ├── Home.tsx          <-- Landningssida
+│   │   ├── Home.tsx          <-- Redirect: / -> /login eller /dashboard beroende på auth
 │   │   ├── Login.tsx         <-- Login & Registration
 │   │   ├── Dashboard.tsx     <-- Worker-vy: tidigare kvitton
 │   │   ├── SubmitReceipt.tsx <-- "Slabb"-formulär för kvitto
-│   │   └── Admin.tsx         <-- Admin-vy: alla kvitton och user-profiler
+│   │   ├── Admin.tsx         <-- Admin-vy: alla kvitton och user-profiler
+│   │   ├── ReceiptDetail.tsx <-- Detaljvy för enskilt kvitto + bild
+│   │   └── AdminUserProfile.tsx <-- Profilvy för en enskild användare
 │   │
 │   ├── App.tsx               <-- Huvudkomponent (där du sätter upp React Router)
 │   └── main.tsx              <-- React DOM-entrypoint
@@ -99,7 +103,10 @@ kvitto-helsingkrona-frontend/
 ## Viktiga arkitekturnoter
 
 1. **Fristående backend:** Eftersom PocketBase kör direkt från `/root/pb/pocketbase` på Linode-servern trackas den inte i detta frontend-repository. React-appen ansluter via miljövariabeln `VITE_PB_URL`.
-2. **Routing:** Vi använder `react-router-dom` i `App.tsx` för att hantera client-side routing (t.ex. att mappa `/admin` till komponenten `Admin.tsx`).
+2. **Routing:** Vi använder `react-router-dom` i `App.tsx` för att hantera client-side routing.
+  - `/` redirectar till `/login` eller `/dashboard` beroende på inloggning.
+  - `/receipt/:receiptId` visar kvitto-detaljer och kvitto-bild.
+  - `/admin/users/:userId` visar adminprofil med användaruppgifter och kvittohistorik.
 3. **Komponentorganisation:** Katalogen `pages/` separerar fulla sidvyer (som Dashboard) från mindre byggblock (som en Button i `components/ui/`).
 
 ## Deployment-flöde
