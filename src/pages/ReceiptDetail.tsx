@@ -85,9 +85,13 @@ function ReceiptDetail() {
         }
 
         const fileName = String(record.receipt_image);
-        const collectionName = record.collectionName || 'receipts';
+        const collectionId = String(record.collectionId || '');
 
-        return `/api/files/${collectionName}/${record.id}/${fileName}`;
+        if (!collectionId || !record.id) {
+            return null;
+        }
+
+        return `/api/files/${collectionId}/${record.id}/${encodeURIComponent(fileName)}?token=`;
     };
 
     const isImageFile = (filename: string) => {
