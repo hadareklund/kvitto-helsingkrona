@@ -114,9 +114,8 @@ function ReceiptDetail() {
         }
 
         const queryString = params.toString();
-        return `/api/files/${record.collectionId}/${record.id}/${encodeURIComponent(fileName)}${
-            queryString ? `?${queryString}` : ''
-        }`;
+        return `/api/files/${record.collectionId}/${record.id}/${encodeURIComponent(fileName)}${queryString ? `?${queryString}` : ''
+            }`;
     };
 
     const getReceiptFileName = (record: RecordModel) => {
