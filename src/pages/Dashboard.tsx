@@ -172,7 +172,7 @@ function Dashboard() {
                                             key={receipt.id}
                                             className="hover:bg-base-200 cursor-pointer"
                                             onClick={() => navigate(`/receipt/${receipt.id}`)}
-                                            title="Klicka for att se kvitto-detaljer"
+                                            title="Klicka för att se kvitto-detaljer"
                                         >
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content">
                                                 {formatDate(receipt.date_for_slabb)}

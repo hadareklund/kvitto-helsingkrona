@@ -67,7 +67,7 @@ function Login() {
                             </label>
 
                             <label className="form-control w-full">
-                                <span className="label-text text-base-content">Losenord</span>
+                                <span className="label-text text-base-content">Lösenord</span>
                                 <input
                                     id="password"
                                     name="password"

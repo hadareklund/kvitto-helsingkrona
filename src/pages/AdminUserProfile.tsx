@@ -38,7 +38,7 @@ function AdminUserProfile() {
         }
 
         if (!userId) {
-            setError('Saknar anvandar-ID.');
+            setError('Saknar användar-ID.');
             setIsLoading(false);
             return;
         }
@@ -58,7 +58,7 @@ function AdminUserProfile() {
                 setReceipts(receiptRecords);
             } catch (err) {
                 console.error('Error fetching user profile:', err);
-                setError('Det gick inte att hamta anvandarprofilen.');
+                setError('Det gick inte att hämta användarprofilen.');
             } finally {
                 setIsLoading(false);
             }
@@ -123,7 +123,7 @@ function AdminUserProfile() {
             <div className="bg-base-200 shadow">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex justify-between items-center">
-                        <h1 className="text-2xl font-bold text-base-content">Anvandarprofil</h1>
+                        <h1 className="text-2xl font-bold text-base-content">Användarprofil</h1>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => navigate('/admin')}
@@ -153,13 +153,13 @@ function AdminUserProfile() {
                     </div>
                 ) : !profile ? (
                     <div className="alert alert-warning">
-                        <span>Anvandaren kunde inte hittas.</span>
+                        <span>Användaren kunde inte hittas.</span>
                     </div>
                 ) : (
                     <>
                         <div className="card bg-base-100 shadow-xl">
                             <div className="card-body">
-                                <h2 className="card-title">Anvandaruppgifter</h2>
+                                <h2 className="card-title">Användaruppgifter</h2>
                                 <div className="divider my-1" />
 
                                 {copyMessage && (
@@ -258,7 +258,7 @@ function AdminUserProfile() {
                                                         key={receipt.id}
                                                         className="hover:bg-base-200 cursor-pointer"
                                                         onClick={() => navigate(`/receipt/${receipt.id}`)}
-                                                        title="Klicka for att se kvitto-detaljer"
+                                                        title="Klicka för att se kvitto-detaljer"
                                                     >
                                                         <td>{formatDate(String(receipt.date_for_slabb || ''))}</td>
                                                         <td>{String(receipt.slabb || '-')}</td>
@@ -284,7 +284,7 @@ function AdminUserProfile() {
                                                                     navigate(`/receipt/${receipt.id}`);
                                                                 }}
                                                             >
-                                                                Oppna
+                                                                Öppna
                                                             </button>
                                                         </td>
                                                     </tr>

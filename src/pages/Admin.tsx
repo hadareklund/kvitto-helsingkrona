@@ -270,7 +270,7 @@ function Admin() {
                         <div className="p-6 space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                                 <label className="form-control w-full md:col-span-2">
-                                    <span className="label-text">Sok anvandare (namn eller e-post)</span>
+                                    <span className="label-text">Sök användare (namn eller e-post)</span>
                                     <input
                                         type="text"
                                         value={searchQuery}
@@ -281,7 +281,7 @@ function Admin() {
                                 </label>
 
                                 <label className="form-control w-full">
-                                    <span className="label-text">Vald anvandare</span>
+                                    <span className="label-text">Vald användare</span>
                                     <select
                                         className="select select-bordered w-full"
                                         value={selectedUserId}
@@ -300,7 +300,7 @@ function Admin() {
                             {selectedUser && (
                                 <div className="alert alert-info">
                                     <span>
-                                        Visar kvittohistorik for: {selectedUser.name || selectedUser.email}
+                                        Visar kvittohistorik för: {selectedUser.name || selectedUser.email}
                                     </span>
                                     <div className="flex items-center gap-2">
                                         <button
@@ -308,7 +308,7 @@ function Admin() {
                                             className="btn btn-ghost btn-xs"
                                             onClick={() => navigate(`/admin/users/${selectedUser.id}`)}
                                         >
-                                            Oppna profil
+                                            Öppna profil
                                         </button>
                                         <button
                                             type="button"
@@ -369,7 +369,7 @@ function Admin() {
                                                                 className="btn btn-ghost btn-xs mt-1"
                                                                 onClick={() => navigate(`/admin/users/${userInfo.id}`)}
                                                             >
-                                                                Oppna profil
+                                                                Öppna profil
                                                             </button>
                                                         )}
                                                     </td>
@@ -434,7 +434,7 @@ function Admin() {
 
                                 {filteredReceipts.length === 0 && (
                                     <div className="py-8 text-center text-base-content/70">
-                                        Inga kvitton hittades for vald anvandare.
+                                        Inga kvitton hittades för vald användare.
                                     </div>
                                 )}
                             </div>

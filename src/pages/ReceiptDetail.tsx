@@ -52,7 +52,7 @@ function ReceiptDetail() {
                 setReceipt(record);
             } catch (err) {
                 console.error('Error fetching receipt details:', err);
-                setError('Det gick inte att hamta kvittot.');
+                setError('Det gick inte att hämta kvittot.');
             } finally {
                 setIsLoading(false);
             }
