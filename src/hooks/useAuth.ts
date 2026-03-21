@@ -99,11 +99,26 @@ export function useAuth() {
         });
     };
 
+    const requestPasswordSetup = async (email: string) => {
+        if (DEV_AUTH_BYPASS) {
+            return { success: true };
+        }
+
+        try {
+            await pb.collection('receipt_user').requestPasswordReset(email);
+            return { success: true };
+        } catch (error) {
+            console.error('Password setup request error:', error);
+            return { success: false, error };
+        }
+    };
+
     return {
         user: authState.user,
         isLoading: authState.isLoading,
         isAuthenticated: !!authState.user,
         login,
+        requestPasswordSetup,
         logout,
     };
 }

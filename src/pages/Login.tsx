@@ -7,8 +7,11 @@ function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [passwordSetupMessage, setPasswordSetupMessage] = useState('');
+    const [passwordSetupError, setPasswordSetupError] = useState('');
+    const [isPasswordSetupLoading, setIsPasswordSetupLoading] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const { login, isAuthenticated } = useAuth();
+    const { login, requestPasswordSetup, isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -33,6 +36,27 @@ function Login() {
         }
     };
 
+    const handlePasswordSetupRequest = async () => {
+        setPasswordSetupMessage('');
+        setPasswordSetupError('');
+
+        if (!email.trim()) {
+            setPasswordSetupError('Fyll i din e-postadress först.');
+            return;
+        }
+
+        setIsPasswordSetupLoading(true);
+        const result = await requestPasswordSetup(email.trim());
+
+        if (result.success) {
+            setPasswordSetupMessage('Om e-posten finns i systemet har en länk för att skapa lösenord skickats.');
+        } else {
+            setPasswordSetupError('Det gick inte att skicka e-post just nu. Försök igen senare.');
+        }
+
+        setIsPasswordSetupLoading(false);
+    };
+
     return (
         <div className="hero min-h-screen bg-base-200 px-4 py-8">
             <div className="hero-content w-full max-w-md">
@@ -49,6 +73,18 @@ function Login() {
                         {error && (
                             <div role="alert" className="alert alert-error">
                                 <span>{error}</span>
+                            </div>
+                        )}
+
+                        {passwordSetupMessage && (
+                            <div role="status" className="alert alert-success">
+                                <span>{passwordSetupMessage}</span>
+                            </div>
+                        )}
+
+                        {passwordSetupError && (
+                            <div role="alert" className="alert alert-warning">
+                                <span>{passwordSetupError}</span>
                             </div>
                         )}
 
@@ -95,6 +131,22 @@ function Login() {
                                     </>
                                 ) : (
                                     'Logga in'
+                                )}
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={isPasswordSetupLoading}
+                                onClick={handlePasswordSetupRequest}
+                                className="btn btn-outline btn-block"
+                            >
+                                {isPasswordSetupLoading ? (
+                                    <>
+                                        <span className="loading loading-spinner loading-sm" />
+                                        Skickar...
+                                    </>
+                                ) : (
+                                    'Skapa lösenord via e-post'
                                 )}
                             </button>
                         </form>
