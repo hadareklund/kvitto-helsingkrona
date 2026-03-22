@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import pb from '../lib/pocketbase';
+import { ensureReceiptUserForPasswordSetup } from '../lib/receiptUserProvisioning';
 import type { RecordModel } from 'pocketbase';
 
 const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
@@ -105,7 +106,13 @@ export function useAuth() {
         }
 
         try {
-            await pb.collection('receipt_user').requestPasswordReset(email);
+            const setupResult = await ensureReceiptUserForPasswordSetup(email);
+            if (!setupResult.foundInUsers) {
+                // Keep the response generic to avoid exposing which emails exist.
+                return { success: true };
+            }
+
+            await pb.collection('receipt_user').requestPasswordReset(email.trim().toLowerCase());
             return { success: true };
         } catch (error) {
             console.error('Password setup request error:', error);

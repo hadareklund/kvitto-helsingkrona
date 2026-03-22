@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import pb from '../lib/pocketbase';
+import { ensureReceiptUserForPasswordSetup } from '../lib/receiptUserProvisioning';
 import { useAuth } from '../hooks/useAuth';
 import type { RecordModel } from 'pocketbase';
 
@@ -121,7 +122,13 @@ function AdminUserProfile() {
 
         setIsInviting(true);
         try {
-            await pb.collection('receipt_user').requestPasswordReset(email);
+            const setupResult = await ensureReceiptUserForPasswordSetup(email);
+            if (!setupResult.foundInUsers) {
+                setInviteError('Ingen matchande användare hittades i users-kollektionen.');
+                return;
+            }
+
+            await pb.collection('receipt_user').requestPasswordReset(email.toLowerCase());
             setInviteMessage('Länk för att skapa lösenord har skickats.');
         } catch (err) {
             console.error('Error sending password invite:', err);
