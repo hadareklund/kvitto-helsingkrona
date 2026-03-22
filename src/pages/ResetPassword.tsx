@@ -127,20 +127,22 @@ function ResetPassword() {
                                 />
                             </label>
 
-                            <button
-                                type="submit"
-                                disabled={isSubmitting || !token}
-                                className="btn btn-primary btn-block"
-                            >
-                                {isSubmitting ? (
-                                    <>
-                                        <span className="loading loading-spinner loading-sm" />
-                                        Uppdaterar...
-                                    </>
-                                ) : (
-                                    'Spara nytt lösenord'
-                                )}
-                            </button>
+                            <div className="pt-3">
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting || !token}
+                                    className="btn btn-primary btn-block"
+                                >
+                                    {isSubmitting ? (
+                                        <>
+                                            <span className="loading loading-spinner loading-sm" />
+                                            Uppdaterar...
+                                        </>
+                                    ) : (
+                                        'Spara nytt lösenord'
+                                    )}
+                                </button>
+                            </div>
                         </form>
 
                         <div className="text-center text-sm">
