@@ -169,17 +169,7 @@ function Admin() {
             return 'PocketBase svarade 404 (resource not found). Vanligtvis betyder det att update-regeln inte matchar användaren eller att du behöver logga ut/in efter att rollen pqs lagts till.';
         }
 
-        const baseMessage = pbError?.response?.message || pbError?.message || 'Okänt fel.';
-        const data = pbError?.response?.data;
-        if (data) {
-            try {
-                return `${baseMessage} Detaljer: ${JSON.stringify(data)}`;
-            } catch {
-                return baseMessage;
-            }
-        }
-
-        return baseMessage;
+        return 'Ett oväntat fel uppstod vid uppdatering av status.';
     };
 
     const handleStatusChange = (receiptId: string, currentStatus: string, newStatus: string) => {
