@@ -100,6 +100,12 @@ function Dashboard() {
                             >
                                 Skicka in nytt kvitto
                             </button>
+                            <button
+                                onClick={() => navigate('/settings')}
+                                className="btn btn-outline btn-sm"
+                            >
+                                Inställningar
+                            </button>
                             {isAdmin && (
                                 <button
                                     onClick={() => navigate('/admin')}

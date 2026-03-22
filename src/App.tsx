@@ -7,6 +7,7 @@ import Admin from './pages/Admin';
 import ReceiptDetail from './pages/ReceiptDetail';
 import AdminUserProfile from './pages/AdminUserProfile';
 import ResetPassword from './pages/ResetPassword';
+import Settings from './pages/Settings';
 import './App.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Route path="/receipt/:receiptId" element={<ReceiptDetail />} />
         <Route path="/admin/users/:userId" element={<AdminUserProfile />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </BrowserRouter>
   );
