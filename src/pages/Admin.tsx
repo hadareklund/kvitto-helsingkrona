@@ -152,30 +152,10 @@ function Admin() {
             case 'Approved':
                 return 'badge badge-success';
             case 'Paid':
-            case 'Payed':
                 return 'badge badge-info';
             default:
                 return 'badge';
         }
-    };
-
-    const isPaidLikeStatus = (status: string) => status === 'Paid' || status === 'Payed';
-
-    const getAlternativePaidStatus = (status: string) => {
-        if (status === 'Paid') {
-            return 'Payed';
-        }
-
-        if (status === 'Payed') {
-            return 'Paid';
-        }
-
-        return null;
-    };
-
-    const isStatusValidationError = (error: unknown) => {
-        const pbError = error as PocketBaseErrorLike;
-        return pbError?.status === 400 && !!pbError?.response?.data?.status;
     };
 
     const buildStatusUpdateErrorMessage = (error: unknown) => {
@@ -183,6 +163,10 @@ function Admin() {
 
         if (pbError?.status === 403) {
             return 'Behörighet saknas i PocketBase API Rule för receipts.update. Lägg till rollen pqs i update-regeln.';
+        }
+
+        if (pbError?.status === 404) {
+            return 'PocketBase svarade 404 (resource not found). Vanligtvis betyder det att update-regeln inte matchar användaren eller att du behöver logga ut/in efter att rollen pqs lagts till.';
         }
 
         const baseMessage = pbError?.response?.message || pbError?.message || 'Okänt fel.';
@@ -207,8 +191,8 @@ function Admin() {
             return;
         }
 
-        // If downgrading from paid status, show confirmation
-        if (isPaidLikeStatus(currentStatus) && (newStatus === 'Pending' || newStatus === 'Approved')) {
+        // If downgrading from Paid, show confirmation
+        if (currentStatus === 'Paid' && (newStatus === 'Pending' || newStatus === 'Approved')) {
             setPendingStatusChange({ receiptId, newStatus, oldStatus: currentStatus });
             setShowConfirmModal(true);
         } else {
@@ -236,24 +220,9 @@ function Admin() {
 
         setUpdatingId(receiptId);
         try {
-            try {
-                await pb.collection('receipts').update(receiptId, {
-                    status: newStatus,
-                });
-            } catch (firstError) {
-                if (!isStatusValidationError(firstError)) {
-                    throw firstError;
-                }
-
-                const alternativeStatus = getAlternativePaidStatus(newStatus);
-                if (!alternativeStatus) {
-                    throw firstError;
-                }
-
-                await pb.collection('receipts').update(receiptId, {
-                    status: alternativeStatus,
-                });
-            }
+            await pb.collection('receipts').update(receiptId, {
+                status: newStatus,
+            });
 
             // Refresh the receipts list
             await fetchReceipts();
@@ -479,7 +448,6 @@ function Admin() {
                                                             <option value="Pending">Pending</option>
                                                             <option value="Approved">Approved</option>
                                                             <option value="Paid">Paid</option>
-                                                            <option value="Payed">Payed</option>
                                                         </select>
                                                         {updatingId === receipt.id && (
                                                             <span className="loading loading-spinner loading-xs ml-2"></span>
