@@ -35,8 +35,9 @@ function AdminUserProfile() {
             return;
         }
 
-        const isAdmin = String(user.role || '').toLowerCase() === 'admin';
-        if (!isAdmin) {
+        const role = String(user.role || '').toLowerCase();
+        const hasAdminViewAccess = role === 'admin' || role === 'pqs';
+        if (!hasAdminViewAccess) {
             navigate('/dashboard');
             return;
         }

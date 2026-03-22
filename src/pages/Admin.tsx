@@ -27,6 +27,9 @@ function Admin() {
     } | null>(null);
     const { user, logout, isLoading: isAuthLoading } = useAuth();
     const navigate = useNavigate();
+    const role = String(user?.role || '').toLowerCase();
+    const hasAdminViewAccess = role === 'admin' || role === 'pqs';
+    const canUpdateStatus = role === 'pqs';
 
     const users = useMemo(() => {
         const uniqueUsers = new Map<string, { id: string; name: string; email: string }>();
@@ -114,14 +117,13 @@ function Admin() {
             return;
         }
 
-        // TODO: Add role check here when implemented
-        // if (user.role !== 'admin') {
-        //     navigate('/dashboard');
-        //     return;
-        // }
+        if (!hasAdminViewAccess) {
+            navigate('/dashboard');
+            return;
+        }
 
         fetchReceipts();
-    }, [user, navigate, isAuthLoading]);
+    }, [user, navigate, isAuthLoading, hasAdminViewAccess]);
 
     useEffect(() => {
         if (selectedUserId && !users.some((u) => u.id === selectedUserId)) {
@@ -148,6 +150,10 @@ function Admin() {
     };
 
     const handleStatusChange = (receiptId: string, currentStatus: string, newStatus: string) => {
+        if (!canUpdateStatus) {
+            return;
+        }
+
         if (newStatus === currentStatus) {
             return;
         }
@@ -175,6 +181,10 @@ function Admin() {
     };
 
     const updateReceiptStatus = async (receiptId: string, newStatus: string) => {
+        if (!canUpdateStatus) {
+            return;
+        }
+
         setUpdatingId(receiptId);
         try {
             await pb.collection('receipts').update(receiptId, {
@@ -321,6 +331,12 @@ function Admin() {
                                 </div>
                             )}
 
+                            {!canUpdateStatus && (
+                                <div className="alert alert-warning">
+                                    <span>Endast användare med rollen pqs kan ändra kvittostatus.</span>
+                                </div>
+                            )}
+
                             <div className="overflow-x-auto">
                                 <table className="table w-full">
                                     <thead className="bg-base-200">
@@ -411,7 +427,7 @@ function Admin() {
                                                             onChange={(e) =>
                                                                 handleStatusChange(receipt.id, receipt.status, e.target.value)
                                                             }
-                                                            disabled={updatingId === receipt.id}
+                                                            disabled={!canUpdateStatus || updatingId === receipt.id}
                                                         >
                                                             <option value="Pending">Pending</option>
                                                             <option value="Approved">Approved</option>

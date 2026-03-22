@@ -82,7 +82,8 @@ function Dashboard() {
         return null;
     }
 
-    const isAdmin = String(user.role || '').toLowerCase() === 'admin';
+    const role = String(user.role || '').toLowerCase();
+    const hasAdminViewAccess = role === 'admin' || role === 'pqs';
 
     return (
         <div className="min-h-screen bg-base-100">
@@ -106,7 +107,7 @@ function Dashboard() {
                             >
                                 Inställningar
                             </button>
-                            {isAdmin && (
+                            {hasAdminViewAccess && (
                                 <button
                                     onClick={() => navigate('/admin')}
                                     className="btn btn-secondary btn-sm"
