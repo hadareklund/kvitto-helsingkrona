@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import pb from '../lib/pocketbase';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { RecordModel } from 'pocketbase';
 
 const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
@@ -11,6 +12,7 @@ function Dashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const { user, logout, isLoading: isAuthLoading } = useAuth();
+    const { tr, locale } = useLanguage();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -38,7 +40,7 @@ function Dashboard() {
                 setReceipts(records);
             } catch (err) {
                 console.error('Error fetching receipts:', err);
-                setError('Det gick inte att hämta dina kvitton.');
+                setError(tr('Det gick inte att hämta dina kvitton.', 'Could not fetch your receipts.'));
             } finally {
                 setIsLoading(false);
             }
@@ -49,7 +51,7 @@ function Dashboard() {
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('sv-SE');
+        return date.toLocaleDateString(locale);
     };
 
     const getStatusBadgeColor = (status: string) => {
@@ -92,20 +94,20 @@ function Dashboard() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex justify-between items-center">
                         <h1 className="text-2xl font-bold text-base-content">
-                            Mina kvitton
+                            {tr('Mina kvitton', 'My receipts')}
                         </h1>
                         <div className="flex gap-4">
                             <button
                                 onClick={() => navigate('/submit')}
                                 className="btn btn-primary btn-sm"
                             >
-                                Skicka in nytt kvitto
+                                {tr('Skicka in nytt kvitto', 'Submit new receipt')}
                             </button>
                             <button
                                 onClick={() => navigate('/settings')}
                                 className="btn btn-outline btn-sm"
                             >
-                                Inställningar
+                                {tr('Inställningar', 'Settings')}
                             </button>
                             {hasAdminViewAccess && (
                                 <button
@@ -119,7 +121,7 @@ function Dashboard() {
                                 onClick={handleLogout}
                                 className="btn btn-secondary btn-sm"
                             >
-                                Logga ut
+                                {tr('Logga ut', 'Log out')}
                             </button>
                         </div>
                     </div>
@@ -131,7 +133,7 @@ function Dashboard() {
                 <div className="card bg-base-100 shadow-xl">
                     {isLoading ? (
                         <div className="p-8 text-center">
-                            <p className="text-base-content/70">Laddar kvitton...</p>
+                            <p className="text-base-content/70">{tr('Laddar kvitton...', 'Loading receipts...')}</p>
                         </div>
                     ) : error ? (
                         <div className="p-8">
@@ -142,13 +144,13 @@ function Dashboard() {
                     ) : receipts.length === 0 ? (
                         <div className="p-8 text-center">
                             <p className="text-base-content/70 mb-4">
-                                Du har inga kvitton ännu.
+                                {tr('Du har inga kvitton ännu.', 'You have no receipts yet.')}
                             </p>
                             <button
                                 onClick={() => navigate('/submit')}
                                 className="btn btn-primary btn-sm"
                             >
-                                Skicka in ditt första kvitto
+                                {tr('Skicka in ditt första kvitto', 'Submit your first receipt')}
                             </button>
                         </div>
                     ) : (
@@ -157,16 +159,16 @@ function Dashboard() {
                                 <thead className="bg-base-200">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-base-content uppercase tracking-wider">
-                                            Datum
+                                            {tr('Datum', 'Date')}
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-base-content uppercase tracking-wider">
                                             Slabb
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-base-content uppercase tracking-wider">
-                                            Anledning
+                                            {tr('Anledning', 'Reason')}
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-base-content uppercase tracking-wider">
-                                            Belopp
+                                            {tr('Belopp', 'Amount')}
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-base-content uppercase tracking-wider">
                                             Status
@@ -179,7 +181,7 @@ function Dashboard() {
                                             key={receipt.id}
                                             className="hover:bg-base-200 cursor-pointer"
                                             onClick={() => navigate(`/receipt/${receipt.id}`)}
-                                            title="Klicka för att se kvitto-detaljer"
+                                            title={tr('Klicka för att se kvitto-detaljer', 'Click to view receipt details')}
                                         >
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content">
                                                 {formatDate(receipt.date_for_slabb)}
@@ -191,7 +193,7 @@ function Dashboard() {
                                                 {receipt.anledning}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content">
-                                                {Number(receipt.amount).toFixed(2)} kr
+                                                {Number(receipt.amount).toFixed(2)} {tr('kr', 'SEK')}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span

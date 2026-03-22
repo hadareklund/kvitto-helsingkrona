@@ -3,6 +3,7 @@ import type { FormEvent, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import pb from '../lib/pocketbase';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
 
@@ -17,6 +18,7 @@ function SubmitReceipt() {
     const [success, setSuccess] = useState(false);
 
     const { user, isLoading: isAuthLoading } = useAuth();
+    const { tr } = useLanguage();
     const navigate = useNavigate();
 
     const slabbOptions = [
@@ -45,12 +47,12 @@ function SubmitReceipt() {
         setSuccess(false);
 
         if (!user) {
-            setError('Du måste vara inloggad för att skicka in ett kvitto');
+            setError(tr('Du måste vara inloggad för att skicka in ett kvitto', 'You must be signed in to submit a receipt'));
             return;
         }
 
         if (!receiptImage) {
-            setError('Du måste ladda upp en bild av kvittot');
+            setError(tr('Du måste ladda upp en bild av kvittot', 'You must upload an image of the receipt'));
             return;
         }
 
@@ -103,7 +105,7 @@ function SubmitReceipt() {
             }, 2000);
         } catch (err) {
             console.error('Error submitting receipt:', err);
-            setError('Ett fel uppstod vid inskick av kvittot. Försök igen.');
+            setError(tr('Ett fel uppstod vid inskick av kvittot. Försök igen.', 'An error occurred while submitting the receipt. Please try again.'));
         } finally {
             setIsLoading(false);
         }
@@ -122,13 +124,13 @@ function SubmitReceipt() {
             <div className="min-h-screen flex items-center justify-center bg-base-100 py-12 px-4">
                 <div className="max-w-md w-full">
                     <p className="text-center text-base-content">
-                        Du måste vara inloggad för att skicka in kvitton.
+                        {tr('Du måste vara inloggad för att skicka in kvitton.', 'You must be signed in to submit receipts.')}
                     </p>
                     <button
                         onClick={() => navigate('/login')}
                         className="btn btn-primary w-full mt-4"
                     >
-                        Logga in
+                        {tr('Logga in', 'Sign in')}
                     </button>
                 </div>
             </div>
@@ -140,13 +142,13 @@ function SubmitReceipt() {
             <div className="max-w-2xl mx-auto">
                 <div className="card bg-base-100 shadow-xl px-8 py-6">
                     <h2 className="text-2xl font-bold text-base-content mb-6">
-                        Skicka in kvitto
+                        {tr('Skicka in kvitto', 'Submit receipt')}
                     </h2>
 
                     {success && (
                         <div className="alert alert-success mb-6">
                             <p className="text-sm">
-                                Kvittot har skickats in! Omdirigerar till dashboard...
+                                {tr('Kvittot har skickats in! Omdirigerar till dashboard...', 'Receipt submitted! Redirecting to dashboard...')}
                             </p>
                         </div>
                     )}
@@ -163,7 +165,7 @@ function SubmitReceipt() {
                                 htmlFor="amount"
                                 className="block text-sm font-medium text-base-content mb-2"
                             >
-                                Belopp (kr) *
+                                {tr('Belopp (kr) *', 'Amount (SEK) *')}
                             </label>
                             <input
                                 type="number"
@@ -192,7 +194,7 @@ function SubmitReceipt() {
                                 onChange={(e) => setSlabb(e.target.value)}
                                 className="select select-bordered w-full"
                             >
-                                <option value="">Välj slabb...</option>
+                                <option value="">{tr('Välj slabb...', 'Choose event...')}</option>
                                 {slabbOptions.map((option) => (
                                     <option key={option} value={option}>
                                         {option}
@@ -206,7 +208,7 @@ function SubmitReceipt() {
                                 htmlFor="anledning"
                                 className="block text-sm font-medium text-base-content mb-2"
                             >
-                                Anledning *
+                                {tr('Anledning *', 'Reason *')}
                             </label>
                             <textarea
                                 id="anledning"
@@ -215,7 +217,7 @@ function SubmitReceipt() {
                                 value={anledning}
                                 onChange={(e) => setAnledning(e.target.value)}
                                 className="textarea textarea-bordered w-full"
-                                placeholder="Beskriv vad kvittot avser..."
+                                placeholder={tr('Beskriv vad kvittot avser...', 'Describe what the receipt is for...')}
                             />
                         </div>
 
@@ -224,7 +226,7 @@ function SubmitReceipt() {
                                 htmlFor="date_for_slabb"
                                 className="block text-sm font-medium text-base-content mb-2"
                             >
-                                Datum för slabb *
+                                {tr('Datum för slabb *', 'Date for event *')}
                             </label>
                             <input
                                 type="date"
@@ -241,7 +243,7 @@ function SubmitReceipt() {
                                 htmlFor="receipt_image"
                                 className="block text-sm font-medium text-base-content mb-2"
                             >
-                                Kvittobild *
+                                {tr('Kvittobild *', 'Receipt image *')}
                             </label>
                             <input
                                 type="file"
@@ -252,7 +254,7 @@ function SubmitReceipt() {
                                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                             />
                             <p className="mt-2 text-xs text-base-content/70">
-                                PNG, JPG, eller PDF (max 10MB)
+                                {tr('PNG, JPG, eller PDF (max 10MB)', 'PNG, JPG, or PDF (max 10MB)')}
                             </p>
                         </div>
 
@@ -262,7 +264,7 @@ function SubmitReceipt() {
                                 disabled={isLoading}
                                 className="btn btn-primary w-full"
                             >
-                                {isLoading ? 'Skickar in...' : 'Skicka in kvitto'}
+                                {isLoading ? tr('Skickar in...', 'Submitting...') : tr('Skicka in kvitto', 'Submit receipt')}
                             </button>
                         </div>
 
@@ -272,7 +274,7 @@ function SubmitReceipt() {
                                 onClick={() => navigate('/dashboard')}
                                 className="btn btn-ghost btn-sm"
                             >
-                                Avbryt och gå tillbaka
+                                {tr('Avbryt och gå tillbaka', 'Cancel and go back')}
                             </button>
                         </div>
                     </form>

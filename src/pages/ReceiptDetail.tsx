@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import pb from '../lib/pocketbase';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { RecordModel } from 'pocketbase';
 
 interface ReceiptWithUser extends RecordModel {
@@ -14,6 +15,7 @@ function ReceiptDetail() {
     const { receiptId } = useParams();
     const navigate = useNavigate();
     const { user, logout, isLoading: isAuthLoading } = useAuth();
+    const { tr, locale } = useLanguage();
     const [receipt, setReceipt] = useState<ReceiptWithUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
@@ -29,7 +31,7 @@ function ReceiptDetail() {
         }
 
         if (!receiptId) {
-            setError('Saknar kvitto-ID.');
+            setError(tr('Saknar kvitto-ID.', 'Missing receipt ID.'));
             setIsLoading(false);
             return;
         }
@@ -53,7 +55,7 @@ function ReceiptDetail() {
                 setReceipt(record);
             } catch (err) {
                 console.error('Error fetching receipt details:', err);
-                setError('Det gick inte att hämta kvittot.');
+                setError(tr('Det gick inte att hämta kvittot.', 'Could not fetch the receipt.'));
             } finally {
                 setIsLoading(false);
             }
@@ -64,7 +66,7 @@ function ReceiptDetail() {
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('sv-SE');
+        return date.toLocaleDateString(locale);
     };
 
     const getStatusBadgeColor = (status: string) => {
@@ -125,19 +127,19 @@ function ReceiptDetail() {
         <div className="min-h-screen bg-base-100">
             <div className="bg-base-200 shadow">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-base-content">Kvitto-detaljer</h1>
+                    <h1 className="text-2xl font-bold text-base-content">{tr('Kvitto-detaljer', 'Receipt details')}</h1>
                     <div className="flex gap-2">
                         <button
                             onClick={() => navigate(-1)}
                             className="btn btn-secondary btn-sm"
                         >
-                            Tillbaka
+                            {tr('Tillbaka', 'Back')}
                         </button>
                         <button
                             onClick={handleLogout}
                             className="btn btn-secondary btn-sm"
                         >
-                            Logga ut
+                            {tr('Logga ut', 'Log out')}
                         </button>
                     </div>
                 </div>
@@ -146,7 +148,7 @@ function ReceiptDetail() {
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {isLoading ? (
                     <div className="card bg-base-100 shadow-xl p-8 text-center">
-                        <p className="text-base-content/70">Laddar kvitto...</p>
+                        <p className="text-base-content/70">{tr('Laddar kvitto...', 'Loading receipt...')}</p>
                     </div>
                 ) : error ? (
                     <div className="alert alert-error">
@@ -154,17 +156,17 @@ function ReceiptDetail() {
                     </div>
                 ) : !receipt ? (
                     <div className="alert alert-warning">
-                        <span>Kvittot kunde inte hittas.</span>
+                        <span>{tr('Kvittot kunde inte hittas.', 'Receipt could not be found.')}</span>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="card bg-base-100 shadow-xl">
                             <div className="card-body">
-                                <h2 className="card-title">Information</h2>
+                                <h2 className="card-title">{tr('Information', 'Information')}</h2>
                                 <div className="divider my-1" />
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between gap-4">
-                                        <span className="text-sm text-base-content/70">Datum</span>
+                                        <span className="text-sm text-base-content/70">{tr('Datum', 'Date')}</span>
                                         <span className="font-medium">{formatDate(receipt.date_for_slabb)}</span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
@@ -172,8 +174,8 @@ function ReceiptDetail() {
                                         <span className="font-medium">{String(receipt.slabb || '-')}</span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
-                                        <span className="text-sm text-base-content/70">Belopp</span>
-                                        <span className="font-medium">{Number(receipt.amount || 0).toFixed(2)} kr</span>
+                                        <span className="text-sm text-base-content/70">{tr('Belopp', 'Amount')}</span>
+                                        <span className="font-medium">{Number(receipt.amount || 0).toFixed(2)} {tr('kr', 'SEK')}</span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
                                         <span className="text-sm text-base-content/70">Status</span>
@@ -182,11 +184,11 @@ function ReceiptDetail() {
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
-                                        <span className="text-sm text-base-content/70">Kvittonummer</span>
+                                        <span className="text-sm text-base-content/70">{tr('Kvittonummer', 'Receipt number')}</span>
                                         <span className="font-medium">{String(receipt.receipt_number || '-')}</span>
                                     </div>
                                     <div className="rounded-box bg-base-200 p-3">
-                                        <p className="text-sm text-base-content/70 mb-1">Anledning</p>
+                                        <p className="text-sm text-base-content/70 mb-1">{tr('Anledning', 'Reason')}</p>
                                         <p className="text-sm">{String(receipt.anledning || '-')}</p>
                                     </div>
                                 </div>
@@ -195,7 +197,7 @@ function ReceiptDetail() {
 
                         <div className="card bg-base-100 shadow-xl">
                             <div className="card-body">
-                                <h2 className="card-title">Kvitto-bild</h2>
+                                <h2 className="card-title">{tr('Kvitto-bild', 'Receipt image')}</h2>
                                 <div className="divider my-1" />
                                 {getReceiptImageUrl(receipt) ? (
                                     <>
@@ -217,21 +219,21 @@ function ReceiptDetail() {
                                             </figure>
                                         ) : (
                                             <div className="alert alert-info">
-                                                <span>Filformat stöds ej för förhandsgranskning.</span>
+                                                <span>{tr('Filformat stöds ej for förhandsgranskning.', 'File format is not supported for preview.')}</span>
                                             </div>
                                         )}
                                         <a
                                             href={getReceiptImageUrl(receipt) || '#'}
-                                            target="_blank"
+                                            target="_blänk"
                                             rel="noopener noreferrer"
                                             className="btn btn-ghost btn-sm mt-3"
                                         >
-                                            Öppna fil i ny flik
+                                            {tr('Öppna fil i ny flik', 'Open file in new tab')}
                                         </a>
                                     </>
                                 ) : (
                                     <div className="alert alert-info">
-                                        <span>Ingen kvitto-bild uppladdad.</span>
+                                        <span>{tr('Ingen kvitto-bild uppladdad.', 'No receipt image uploaded.')}</span>
                                     </div>
                                 )}
                             </div>

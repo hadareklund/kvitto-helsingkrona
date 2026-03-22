@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import pb from '../lib/pocketbase';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { RecordModel } from 'pocketbase';
 
 const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
@@ -36,6 +37,7 @@ function Admin() {
     } | null>(null);
     const { user, logout, isLoading: isAuthLoading } = useAuth();
     const navigate = useNavigate();
+    const { tr, locale } = useLanguage();
     const role = String(user?.role || '').toLowerCase();
     const hasAdminViewAccess = role === 'admin' || role === 'pqs';
     const canUpdateStatus = role === 'pqs';
@@ -61,9 +63,9 @@ function Admin() {
         return Array.from(uniqueUsers.values()).sort((a, b) => {
             const aLabel = a.name || a.email;
             const bLabel = b.name || b.email;
-            return aLabel.localeCompare(bLabel, 'sv');
+            return aLabel.localeCompare(bLabel, locale);
         });
-    }, [receipts]);
+    }, [receipts, locale]);
 
     const filteredUsers = useMemo(() => {
         const query = searchQuery.trim().toLowerCase();
@@ -104,7 +106,7 @@ function Admin() {
             setReceipts(records);
         } catch (err) {
             console.error('Error fetching receipts:', err);
-            setError('Det gick inte att hämta kvitton.');
+            setError(tr('Det gick inte att hämta kvitton.', 'Could not fetch receipts.'));
         } finally {
             setIsLoading(false);
         }
@@ -142,7 +144,7 @@ function Admin() {
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('sv-SE');
+        return date.toLocaleDateString(locale);
     };
 
     const getStatusBadgeColor = (status: string) => {
@@ -162,14 +164,20 @@ function Admin() {
         const pbError = error as PocketBaseErrorLike;
 
         if (pbError?.status === 403) {
-            return 'Behörighet saknas i PocketBase API Rule för receipts.update. Lägg till rollen pqs i update-regeln.';
+            return tr(
+                'Behörighet saknas i PocketBase API Rule for receipts.update. Lägg till rollen pqs i update-regeln.',
+                'Permission is missing in PocketBase API Rule for receipts.update. Add role pqs to the update rule.'
+            );
         }
 
         if (pbError?.status === 404) {
-            return 'PocketBase svarade 404 (resource not found). Vanligtvis betyder det att update-regeln inte matchar användaren eller att du behöver logga ut/in efter att rollen pqs lagts till.';
+            return tr(
+                'PocketBase svarade 404 (resource not found). Vanligtvis betyder det att update-regeln inte matchar användaren eller att du behöver logga ut/in efter att rollen pqs lagts till.',
+                'PocketBase returned 404 (resource not found). Usually this means the update rule does not match the user or you need to sign out/in after role pqs was added.'
+            );
         }
 
-        return 'Ett oväntat fel uppstod vid uppdatering av status.';
+        return tr('Ett oväntat fel uppstod vid uppdatering av status.', 'An unexpected error occurred while updating status.');
     };
 
     const handleStatusChange = (receiptId: string, currentStatus: string, newStatus: string) => {
@@ -218,7 +226,7 @@ function Admin() {
             await fetchReceipts();
         } catch (err) {
             console.error('Error updating receipt status:', err);
-            alert(`Det gick inte att uppdatera kvittot. ${buildStatusUpdateErrorMessage(err)}`);
+            alert(`${tr('Det gick inte att uppdatera kvittot.', 'Could not update the receipt.')} ${buildStatusUpdateErrorMessage(err)}`);
         } finally {
             setUpdatingId(null);
         }
@@ -248,20 +256,20 @@ function Admin() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex justify-between items-center">
                         <h1 className="text-2xl font-bold text-base-content">
-                            Admin - Alla kvitton
+                            {tr('Admin - Alla kvitton', 'Admin - All receipts')}
                         </h1>
                         <div className="flex gap-4">
                             <button
                                 onClick={() => navigate('/dashboard')}
                                 className="btn btn-secondary btn-sm"
                             >
-                                Till Dashboard
+                                {tr('Till Dashboard', 'To Dashboard')}
                             </button>
                             <button
                                 onClick={handleLogout}
                                 className="btn btn-secondary btn-sm"
                             >
-                                Logga ut
+                                {tr('Logga ut', 'Log out')}
                             </button>
                         </div>
                     </div>
@@ -273,7 +281,7 @@ function Admin() {
                 <div className="card bg-base-100 shadow-xl overflow-hidden">
                     {isLoading ? (
                         <div className="p-8 text-center">
-                            <p className="text-base-content/70">Laddar kvitton...</p>
+                            <p className="text-base-content/70">{tr('Laddar kvitton...', 'Loading receipts...')}</p>
                         </div>
                     ) : error ? (
                         <div className="p-8">
@@ -283,30 +291,30 @@ function Admin() {
                         </div>
                     ) : receipts.length === 0 ? (
                         <div className="p-8 text-center">
-                            <p className="text-base-content/70">Inga kvitton finns ännu.</p>
+                            <p className="text-base-content/70">{tr('Inga kvitton finns ännu.', 'No receipts yet.')}</p>
                         </div>
                     ) : (
                         <div className="p-6 space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                                 <label className="form-control w-full md:col-span-2">
-                                    <span className="label-text">Sök användare (namn eller e-post)</span>
+                                    <span className="label-text">{tr('Sök användare (namn eller e-post)', 'Search user (name or email)')}</span>
                                     <input
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder="Exempel: Erik eller erik@..."
+                                        placeholder={tr('Exempel: Erik eller erik@...', 'Example: Erik or erik@...')}
                                         className="input input-bordered w-full"
                                     />
                                 </label>
 
                                 <label className="form-control w-full">
-                                    <span className="label-text">Vald användare</span>
+                                    <span className="label-text">{tr('Vald användare', 'Selected user')}</span>
                                     <select
                                         className="select select-bordered w-full"
                                         value={selectedUserId}
                                         onChange={(e) => setSelectedUserId(e.target.value)}
                                     >
-                                        <option value="">Visa alla</option>
+                                        <option value="">{tr('Visa alla', 'Show all')}</option>
                                         {filteredUsers.map((u) => (
                                             <option key={u.id} value={u.id}>
                                                 {u.name || u.email} {u.email ? `(${u.email})` : ''}
@@ -319,7 +327,7 @@ function Admin() {
                             {selectedUser && (
                                 <div className="alert alert-info">
                                     <span>
-                                        Visar kvittohistorik för: {selectedUser.name || selectedUser.email}
+                                        {tr('Visar kvittohistorik for:', 'Showing receipt history for:')} {selectedUser.name || selectedUser.email}
                                     </span>
                                     <div className="flex items-center gap-2">
                                         <button
@@ -327,14 +335,14 @@ function Admin() {
                                             className="btn btn-ghost btn-xs"
                                             onClick={() => navigate(`/admin/users/${selectedUser.id}`)}
                                         >
-                                            Öppna profil
+                                            {tr('Öppna profil', 'Open profile')}
                                         </button>
                                         <button
                                             type="button"
                                             className="btn btn-ghost btn-xs"
                                             onClick={() => setSelectedUserId('')}
                                         >
-                                            Rensa filter
+                                            {tr('Rensa filter', 'Clear filter')}
                                         </button>
                                     </div>
                                 </div>
@@ -342,7 +350,7 @@ function Admin() {
 
                             {!canUpdateStatus && (
                                 <div className="alert alert-warning">
-                                    <span>Endast användare med rollen pqs kan ändra kvittostatus.</span>
+                                    <span>{tr('Endast användare med rollen pqs kan ändra kvittostatus.', 'Only users with role pqs can update receipt status.')}</span>
                                 </div>
                             )}
 
@@ -351,22 +359,22 @@ function Admin() {
                                     <thead className="bg-base-200">
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-base-content uppercase tracking-wider">
-                                                Användare
+                                                {tr('Användare', 'User')}
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Bankuppgifter
+                                                {tr('Bankuppgifter', 'Bank details')}
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Datum
+                                                {tr('Datum', 'Date')}
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Slabb
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Anledning
+                                                {tr('Anledning', 'Reason')}
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Belopp
+                                                {tr('Belopp', 'Amount')}
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Status
@@ -381,7 +389,7 @@ function Admin() {
                                                     key={receipt.id}
                                                     className="hover:bg-base-200 cursor-pointer"
                                                     onClick={() => navigate(`/receipt/${receipt.id}`)}
-                                                    title="Klicka för att se kvitto-detaljer"
+                                                    title={tr('Klicka för att se kvitto-detaljer', 'Click to view receipt details')}
                                                 >
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm font-medium text-base-content">
@@ -399,7 +407,7 @@ function Admin() {
                                                                     navigate(`/admin/users/${userInfo.id}`);
                                                                 }}
                                                             >
-                                                                Öppna profil
+                                                                {tr('Öppna profil', 'Open profile')}
                                                             </button>
                                                         )}
                                                     </td>
@@ -423,7 +431,7 @@ function Admin() {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        {Number(receipt.amount).toFixed(2)} kr
+                                                        {Number(receipt.amount).toFixed(2)} {tr('kr', 'SEK')}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <select
@@ -451,7 +459,7 @@ function Admin() {
 
                                 {filteredReceipts.length === 0 && (
                                     <div className="py-8 text-center text-base-content/70">
-                                        Inga kvitton hittades för vald användare.
+                                        {tr('Inga kvitton hittades för vald användare.', 'No receipts found for selected user.')}
                                     </div>
                                 )}
                             </div>
@@ -463,20 +471,20 @@ function Admin() {
             {showConfirmModal && (
                 <div className="modal modal-open">
                     <div className="modal-box">
-                        <h3 className="font-bold text-lg">Bekräfta statusändring</h3>
+                        <h3 className="font-bold text-lg">{tr('Bekräfta statusändring', 'Confirm status change')}</h3>
                         <p className="py-4">
-                            Du är på väg att ändra status från <strong>{pendingStatusChange?.oldStatus}</strong> till{' '}
+                            {tr('Du ar pa vag att andra status fran', 'You are about to change status from')} <strong>{pendingStatusChange?.oldStatus}</strong> {tr('till', 'to')}{' '}
                             <strong>{pendingStatusChange?.newStatus}</strong>.
                         </p>
                         <p className="text-warning">
-                            ⚠️ Detta innebär att ett kvitto som markerats som betalt kommer att återgå till en tidigare status.
+                            {tr('Detta innebär att ett kvitto som markerats som betalt kommer att återgå till en tidigare status.', 'This means a receipt marked as paid will return to an earlier status.')}
                         </p>
                         <div className="modal-action">
                             <button className="btn btn-ghost" onClick={cancelStatusChange}>
-                                Avbryt
+                                {tr('Avbryt', 'Cancel')}
                             </button>
                             <button className="btn btn-warning" onClick={confirmStatusChange}>
-                                Bekräfta ändring
+                                {tr('Bekräfta ändring', 'Confirm change')}
                             </button>
                         </div>
                     </div>

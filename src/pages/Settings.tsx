@@ -3,12 +3,14 @@ import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import pb from '../lib/pocketbase';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
 
 function Settings() {
     const navigate = useNavigate();
     const { user, isLoading: isAuthLoading } = useAuth();
+    const { tr } = useLanguage();
 
     const [bankName, setBankName] = useState('');
     const [accountNumber, setAccountNumber] = useState('');
@@ -41,7 +43,7 @@ function Settings() {
                 setAccountNumber(String(profile.account_number || ''));
             } catch (fetchError) {
                 console.error('Error fetching settings profile:', fetchError);
-                setError('Det gick inte att hämta dina uppgifter.');
+                setError(tr('Det gick inte att hämta dina uppgifter.', 'Could not fetch your details.'));
             } finally {
                 setIsLoading(false);
             }
@@ -56,12 +58,12 @@ function Settings() {
         setSuccessMessage('');
 
         if (!user) {
-            setError('Du måste vara inloggad.');
+            setError(tr('Du måste vara inloggad.', 'You must be signed in.'));
             return;
         }
 
         if (!bankName.trim() || !accountNumber.trim()) {
-            setError('Fyll i både bank och kontonummer.');
+            setError(tr('Fyll i bade bank och kontonummer.', 'Fill in both bank and account number.'));
             return;
         }
 
@@ -75,10 +77,10 @@ function Settings() {
                 });
             }
 
-            setSuccessMessage('Dina bankuppgifter har uppdaterats.');
+            setSuccessMessage(tr('Dina bankuppgifter har uppdaterats.', 'Your bank details have been updated.'));
         } catch (saveError) {
             console.error('Error updating bank settings:', saveError);
-            setError('Det gick inte att spara ändringarna. Försök igen.');
+            setError(tr('Det gick inte att spara ändringarna. Försök igen.', 'Could not save your changes. Please try again.'));
         } finally {
             setIsSaving(false);
         }
@@ -101,9 +103,9 @@ function Settings() {
             <div className="max-w-2xl mx-auto">
                 <div className="card bg-base-100 shadow-xl border border-base-300">
                     <div className="card-body p-6 sm:p-8">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-base-content">Inställningar</h1>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-base-content">{tr('Inställningar', 'Settings')}</h1>
                         <p className="text-sm text-base-content/70">
-                            Uppdatera dina bankuppgifter för utbetalningar.
+                            {tr('Uppdatera dina bankuppgifter for utbetalningar.', 'Update your bank details for payouts.')}
                         </p>
 
                         {error && (
@@ -126,19 +128,19 @@ function Settings() {
                                     value={bankName}
                                     onChange={(event) => setBankName(event.target.value)}
                                     className="input input-bordered w-full"
-                                    placeholder="Exempel: Swedbank"
+                                    placeholder={tr('Exempel: Swedbank', 'Example: Swedbank')}
                                     required
                                 />
                             </label>
 
                             <label className="form-control w-full gap-2">
-                                <span className="label-text font-medium text-base-content">Kontonummer</span>
+                                <span className="label-text font-medium text-base-content">{tr('Kontonummer', 'Account number')}</span>
                                 <input
                                     type="text"
                                     value={accountNumber}
                                     onChange={(event) => setAccountNumber(event.target.value)}
                                     className="input input-bordered w-full"
-                                    placeholder="Exempel: 8327-9, 123 456 789-0"
+                                    placeholder={tr('Exempel: 8327-9, 123 456 789-0', 'Example: 8327-9, 123 456 789-0')}
                                     required
                                 />
                             </label>
@@ -152,10 +154,10 @@ function Settings() {
                                     {isSaving ? (
                                         <>
                                             <span className="loading loading-spinner loading-sm" />
-                                            Sparar...
+                                            {tr('Sparar...', 'Saving...')}
                                         </>
                                     ) : (
-                                        'Spara'
+                                        tr('Spara', 'Save')
                                     )}
                                 </button>
                                 <button
@@ -163,7 +165,7 @@ function Settings() {
                                     className="btn btn-ghost"
                                     onClick={() => navigate('/dashboard')}
                                 >
-                                    Tillbaka
+                                    {tr('Tillbaka', 'Back')}
                                 </button>
                             </div>
                         </form>

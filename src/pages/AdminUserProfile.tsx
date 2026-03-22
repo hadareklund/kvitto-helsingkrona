@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import pb from '../lib/pocketbase';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { RecordModel } from 'pocketbase';
 
 interface ReceiptWithUser extends RecordModel {
@@ -14,6 +15,7 @@ function AdminUserProfile() {
     const { userId } = useParams();
     const navigate = useNavigate();
     const { user, logout, isLoading: isAuthLoading } = useAuth();
+    const { tr, locale } = useLanguage();
 
     const [profile, setProfile] = useState<RecordModel | null>(null);
     const [receipts, setReceipts] = useState<ReceiptWithUser[]>([]);
@@ -39,7 +41,7 @@ function AdminUserProfile() {
         }
 
         if (!userId) {
-            setError('Saknar användar-ID.');
+            setError(tr('Saknar användar-ID.', 'Missing user ID.'));
             setIsLoading(false);
             return;
         }
@@ -59,7 +61,7 @@ function AdminUserProfile() {
                 setReceipts(receiptRecords);
             } catch (err) {
                 console.error('Error fetching user profile:', err);
-                setError('Det gick inte att hämta användarprofilen.');
+                setError(tr('Det gick inte att hämta användarprofilen.', 'Could not fetch the user profile.'));
             } finally {
                 setIsLoading(false);
             }
@@ -75,7 +77,7 @@ function AdminUserProfile() {
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('sv-SE');
+        return date.toLocaleDateString(locale);
     };
 
     const getStatusBadgeColor = (status: string) => {
@@ -98,11 +100,11 @@ function AdminUserProfile() {
 
         try {
             await navigator.clipboard.writeText(value);
-            setCopyMessage(`${label} kopierat`);
+            setCopyMessage(`${label} ${tr('kopierat', 'copied')}`);
             window.setTimeout(() => setCopyMessage(''), 2000);
         } catch (err) {
             console.error('Copy failed:', err);
-            setCopyMessage('Kunde inte kopiera');
+            setCopyMessage(tr('Kunde inte kopiera', 'Could not copy'));
             window.setTimeout(() => setCopyMessage(''), 2000);
         }
     };
@@ -125,18 +127,19 @@ function AdminUserProfile() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex justify-between items-center">
                         <h1 className="text-2xl font-bold text-base-content">Användarprofil</h1>
+                        <h1 className="text-2xl font-bold text-base-content">{tr('Användarprofil', 'User profile')}</h1>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => navigate('/admin')}
                                 className="btn btn-secondary btn-sm"
                             >
-                                Till admin
+                                {tr('Till admin', 'To admin')}
                             </button>
                             <button
                                 onClick={handleLogout}
                                 className="btn btn-secondary btn-sm"
                             >
-                                Logga ut
+                                {tr('Logga ut', 'Log out')}
                             </button>
                         </div>
                     </div>
@@ -146,7 +149,7 @@ function AdminUserProfile() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
                 {isLoading ? (
                     <div className="card bg-base-100 shadow-xl p-8 text-center">
-                        <p className="text-base-content/70">Laddar profil...</p>
+                        <p className="text-base-content/70">{tr('Laddar profil...', 'Loading profile...')}</p>
                     </div>
                 ) : error ? (
                     <div className="alert alert-error">
@@ -154,13 +157,13 @@ function AdminUserProfile() {
                     </div>
                 ) : !profile ? (
                     <div className="alert alert-warning">
-                        <span>Användaren kunde inte hittas.</span>
+                        <span>{tr('Användaren kunde inte hittas.', 'User could not be found.')}</span>
                     </div>
                 ) : (
                     <>
                         <div className="card bg-base-100 shadow-xl">
                             <div className="card-body">
-                                <h2 className="card-title">Användaruppgifter</h2>
+                                <h2 className="card-title">{tr('Användaruppgifter', 'User details')}</h2>
                                 <div className="divider my-1" />
 
                                 {copyMessage && (
@@ -171,46 +174,46 @@ function AdminUserProfile() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
                                     <div className="rounded-box bg-base-200 p-3">
-                                        <p className="text-sm text-base-content/70">Namn</p>
+                                        <p className="text-sm text-base-content/70">{tr('Namn', 'Name')}</p>
                                         <p className="font-medium">{String(profile.name || '-')}</p>
                                     </div>
 
                                     <div className="rounded-box bg-base-200 p-3">
-                                        <p className="text-sm text-base-content/70">E-post</p>
+                                        <p className="text-sm text-base-content/70">{tr('E-post', 'Email')}</p>
                                         <div className="flex items-center gap-2">
                                             <p className="font-medium break-all">{String(profile.email || '-')}</p>
                                             {profile.email && (
                                                 <button
                                                     className="btn btn-ghost btn-xs"
                                                     onClick={() =>
-                                                        copyToClipboard('E-post', String(profile.email || ''))
+                                                        copyToClipboard(tr('E-post', 'Email'), String(profile.email || ''))
                                                     }
                                                 >
-                                                    Kopiera
+                                                    {tr('Kopiera', 'Copy')}
                                                 </button>
                                             )}
                                         </div>
                                     </div>
 
                                     <div className="rounded-box bg-base-200 p-3">
-                                        <p className="text-sm text-base-content/70">Bank</p>
+                                        <p className="text-sm text-base-content/70">{tr('Bank', 'Bank')}</p>
                                         <div className="flex items-center gap-2">
                                             <p className="font-medium">{String(profile.bank_name || '-')}</p>
                                             {profile.bank_name && (
                                                 <button
                                                     className="btn btn-ghost btn-xs"
                                                     onClick={() =>
-                                                        copyToClipboard('Bank', String(profile.bank_name || ''))
+                                                        copyToClipboard(tr('Bank', 'Bank'), String(profile.bank_name || ''))
                                                     }
                                                 >
-                                                    Kopiera
+                                                    {tr('Kopiera', 'Copy')}
                                                 </button>
                                             )}
                                         </div>
                                     </div>
 
                                     <div className="rounded-box bg-base-200 p-3">
-                                        <p className="text-sm text-base-content/70">Kontonummer</p>
+                                        <p className="text-sm text-base-content/70">{tr('Kontonummer', 'Account number')}</p>
                                         <div className="flex items-center gap-2">
                                             <p className="font-medium">{String(profile.account_number || '-')}</p>
                                             {profile.account_number && (
@@ -218,12 +221,12 @@ function AdminUserProfile() {
                                                     className="btn btn-ghost btn-xs"
                                                     onClick={() =>
                                                         copyToClipboard(
-                                                            'Kontonummer',
+                                                            tr('Kontonummer', 'Account number'),
                                                             String(profile.account_number || '')
                                                         )
                                                     }
                                                 >
-                                                    Kopiera
+                                                    {tr('Kopiera', 'Copy')}
                                                 </button>
                                             )}
                                         </div>
@@ -235,11 +238,11 @@ function AdminUserProfile() {
                         <div className="card bg-base-100 shadow-xl overflow-hidden">
                             <div className="card-body p-0">
                                 <div className="p-6 pb-2">
-                                    <h2 className="card-title">Kvittohistorik (dashboard-vy)</h2>
+                                    <h2 className="card-title">{tr('Kvittohistorik (dashboard-vy)', 'Receipt history (dashboard view)')}</h2>
                                 </div>
 
                                 {receipts.length === 0 ? (
-                                    <div className="px-6 pb-6 text-base-content/70">Inga kvitton hittades.</div>
+                                    <div className="px-6 pb-6 text-base-content/70">{tr('Inga kvitton hittades.', 'No receipts found.')}</div>
                                 ) : (
                                     <div className="overflow-x-auto">
                                         <table className="table table-zebra w-full">
@@ -285,7 +288,7 @@ function AdminUserProfile() {
                                                                     navigate(`/receipt/${receipt.id}`);
                                                                 }}
                                                             >
-                                                                Öppna
+                                                                {tr('Öppna', 'Open')}
                                                             </button>
                                                         </td>
                                                     </tr>

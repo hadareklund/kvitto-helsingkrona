@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../i18n/LanguageContext';
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -12,6 +13,7 @@ function Login() {
     const [isPasswordSetupLoading, setIsPasswordSetupLoading] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { login, requestPasswordSetup, isAuthenticated } = useAuth();
+    const { tr } = useLanguage();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -31,7 +33,7 @@ function Login() {
         if (result.success) {
             navigate('/dashboard');
         } else {
-            setError('Felaktig e-post eller lösenord');
+            setError(tr('Felaktig e-post eller lösenord', 'Incorrect email or password'));
             setIsLoading(false);
         }
     };
@@ -41,7 +43,7 @@ function Login() {
         setPasswordSetupError('');
 
         if (!email.trim()) {
-            setPasswordSetupError('Fyll i din e-postadress först.');
+            setPasswordSetupError(tr('Fyll i din e-postadress först.', 'Please enter your email first.'));
             return;
         }
 
@@ -49,9 +51,19 @@ function Login() {
         const result = await requestPasswordSetup(email.trim());
 
         if (result.success) {
-            setPasswordSetupMessage('Om e-posten finns i systemet har en länk för att skapa lösenord skickats.');
+            setPasswordSetupMessage(
+                tr(
+                    'Om e-posten finns i systemet har en länk för att skapa lösenord skickats.',
+                    'If the email exists in the system, a link to create a password has been sent.'
+                )
+            );
         } else {
-            setPasswordSetupError('Det gick inte att skicka e-post just nu. Försök igen senare.');
+            setPasswordSetupError(
+                tr(
+                    'Det gick inte att skicka e-post just nu. Försök igen senare.',
+                    'Could not send email right now. Please try again later.'
+                )
+            );
         }
 
         setIsPasswordSetupLoading(false);
@@ -66,7 +78,7 @@ function Login() {
                             <div className="badge badge-primary badge-outline">Helsingkrona</div>
                             <h1 className="text-3xl sm:text-4xl font-bold text-base-content">Kvittoportalen</h1>
                             <p className="text-sm sm:text-base text-base-content/70">
-                                Logga in för att hantera dina kvitton
+                                {tr('Logga in för att hantera dina kvitton', 'Sign in to manage your receipts')}
                             </p>
                         </div>
 
@@ -90,7 +102,7 @@ function Login() {
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <label className="form-control w-full gap-2">
-                                <span className="label-text font-medium text-base-content">E-postadress</span>
+                                <span className="label-text font-medium text-base-content">{tr('E-postadress', 'Email address')}</span>
                                 <input
                                     id="email-address"
                                     name="email"
@@ -100,12 +112,12 @@ function Login() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="input input-bordered input-md w-full"
-                                    placeholder="namn@helsingkrona.se"
+                                    placeholder={tr('namn@helsingkrona.se', 'name@helsingkrona.se')}
                                 />
                             </label>
 
                             <label className="form-control w-full gap-2">
-                                <span className="label-text font-medium text-base-content">Lösenord</span>
+                                <span className="label-text font-medium text-base-content">{tr('Lösenord', 'Password')}</span>
                                 <input
                                     id="password"
                                     name="password"
@@ -127,10 +139,10 @@ function Login() {
                                 {isLoading ? (
                                     <>
                                         <span className="loading loading-spinner loading-sm" />
-                                        Loggar in...
+                                        {tr('Loggar in...', 'Signing in...')}
                                     </>
                                 ) : (
-                                    'Logga in'
+                                    tr('Logga in', 'Sign in')
                                 )}
                             </button>
 
@@ -143,10 +155,10 @@ function Login() {
                                 {isPasswordSetupLoading ? (
                                     <>
                                         <span className="loading loading-spinner loading-sm" />
-                                        Skickar...
+                                        {tr('Skickar...', 'Sending...')}
                                     </>
                                 ) : (
-                                    'Skapa lösenord via e-post'
+                                    tr('Skapa lösenord via e-post', 'Create password via email')
                                 )}
                             </button>
                         </form>
