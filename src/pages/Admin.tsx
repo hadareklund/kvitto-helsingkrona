@@ -151,9 +151,9 @@ function Admin() {
         switch (status) {
             case 'Pending':
                 return 'badge badge-warning';
-            case 'Approved':
-                return 'badge badge-success';
             case 'Paid':
+                return 'badge badge-success';
+            case 'Bokförd':
                 return 'badge badge-info';
             default:
                 return 'badge';
@@ -189,8 +189,8 @@ function Admin() {
             return;
         }
 
-        // If downgrading from Paid, show confirmation
-        if (currentStatus === 'Paid' && (newStatus === 'Pending' || newStatus === 'Approved')) {
+        // If downgrading from Bokförd, show confirmation
+        if (currentStatus === 'Bokförd' && (newStatus === 'Pending' || newStatus === 'Paid')) {
             setPendingStatusChange({ receiptId, newStatus, oldStatus: currentStatus });
             setShowConfirmModal(true);
         } else {
@@ -444,8 +444,8 @@ function Admin() {
                                                             disabled={!canUpdateStatus || updatingId === receipt.id}
                                                         >
                                                             <option value="Pending">Pending</option>
-                                                            <option value="Approved">Approved</option>
                                                             <option value="Paid">Paid</option>
+                                                            <option value="Bokförd">Bokförd</option>
                                                         </select>
                                                         {updatingId === receipt.id && (
                                                             <span className="loading loading-spinner loading-xs ml-2"></span>

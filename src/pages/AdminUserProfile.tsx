@@ -84,9 +84,9 @@ function AdminUserProfile() {
         switch (status) {
             case 'Pending':
                 return 'badge badge-warning';
-            case 'Approved':
-                return 'badge badge-success';
             case 'Paid':
+                return 'badge badge-success';
+            case 'Bokförd':
                 return 'badge badge-info';
             default:
                 return 'badge';
