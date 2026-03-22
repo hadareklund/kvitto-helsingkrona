@@ -200,21 +200,6 @@ function Admin() {
         }
     };
 
-    const getReceiptImageUrl = (receipt: RecordModel) => {
-        if (!receipt.receipt_image) {
-            return null;
-        }
-
-        const fileName = String(receipt.receipt_image);
-        const collectionId = String(receipt.collectionId || '');
-
-        if (!collectionId || !receipt.id) {
-            return null;
-        }
-
-        return `/api/files/${collectionId}/${receipt.id}/${encodeURIComponent(fileName)}?token=`;
-    };
-
     const handleLogout = () => {
         logout();
         navigate('/login');
@@ -362,9 +347,6 @@ function Admin() {
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Status
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Åtgärder
-                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-base-300">
@@ -436,21 +418,6 @@ function Admin() {
                                                         {updatingId === receipt.id && (
                                                             <span className="loading loading-spinner loading-xs ml-2"></span>
                                                         )}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                        <div className="flex flex-col gap-1">
-                                                            {receipt.receipt_image && (
-                                                                <a
-                                                                    href={getReceiptImageUrl(receipt) || '#'}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="btn btn-ghost btn-xs text-center"
-                                                                    onClick={(e) => e.stopPropagation()}
-                                                                >
-                                                                    Visa kvitto
-                                                                </a>
-                                                            )}
-                                                        </div>
                                                     </td>
                                                 </tr>
                                             );

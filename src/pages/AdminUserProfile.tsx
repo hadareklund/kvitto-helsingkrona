@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import pb from '../lib/pocketbase';
-import { ensureReceiptUserForPasswordSetup } from '../lib/receiptUserProvisioning';
 import { useAuth } from '../hooks/useAuth';
 import type { RecordModel } from 'pocketbase';
 
@@ -21,9 +20,6 @@ function AdminUserProfile() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [copyMessage, setCopyMessage] = useState('');
-    const [inviteMessage, setInviteMessage] = useState('');
-    const [inviteError, setInviteError] = useState('');
-    const [isInviting, setIsInviting] = useState(false);
 
     useEffect(() => {
         if (isAuthLoading) {
@@ -111,34 +107,6 @@ function AdminUserProfile() {
         }
     };
 
-    const handleSendPasswordInvite = async () => {
-        const email = String(profile?.email || '').trim();
-        setInviteMessage('');
-        setInviteError('');
-
-        if (!email) {
-            setInviteError('Användaren saknar e-postadress.');
-            return;
-        }
-
-        setIsInviting(true);
-        try {
-            const setupResult = await ensureReceiptUserForPasswordSetup(email);
-            if (!setupResult.foundInUsers) {
-                setInviteError('Ingen matchande användare hittades i users-kollektionen.');
-                return;
-            }
-
-            await pb.collection('receipt_user').requestPasswordReset(email.toLowerCase());
-            setInviteMessage('Länk för att skapa lösenord har skickats.');
-        } catch (err) {
-            console.error('Error sending password invite:', err);
-            setInviteError('Det gick inte att skicka e-post just nu.');
-        } finally {
-            setIsInviting(false);
-        }
-    };
-
     if (isAuthLoading) {
         return (
             <div className="min-h-screen bg-base-100 flex items-center justify-center">
@@ -200,36 +168,6 @@ function AdminUserProfile() {
                                         <span>{copyMessage}</span>
                                     </div>
                                 )}
-
-                                {inviteMessage && (
-                                    <div className="alert alert-success py-2 text-sm">
-                                        <span>{inviteMessage}</span>
-                                    </div>
-                                )}
-
-                                {inviteError && (
-                                    <div className="alert alert-warning py-2 text-sm">
-                                        <span>{inviteError}</span>
-                                    </div>
-                                )}
-
-                                <div>
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary btn-sm"
-                                        onClick={handleSendPasswordInvite}
-                                        disabled={isInviting}
-                                    >
-                                        {isInviting ? (
-                                            <>
-                                                <span className="loading loading-spinner loading-xs" />
-                                                Skickar...
-                                            </>
-                                        ) : (
-                                            'Skicka lösenordslänk'
-                                        )}
-                                    </button>
-                                </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
                                     <div className="rounded-box bg-base-200 p-3">
