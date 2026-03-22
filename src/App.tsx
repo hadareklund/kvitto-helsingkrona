@@ -6,6 +6,7 @@ import SubmitReceipt from './pages/SubmitReceipt';
 import Admin from './pages/Admin';
 import ReceiptDetail from './pages/ReceiptDetail';
 import AdminUserProfile from './pages/AdminUserProfile';
+import ResetPassword from './pages/ResetPassword';
 import './App.css';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/receipt/:receiptId" element={<ReceiptDetail />} />
         <Route path="/admin/users/:userId" element={<AdminUserProfile />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </BrowserRouter>
   );
