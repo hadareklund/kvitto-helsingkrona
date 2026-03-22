@@ -355,7 +355,12 @@ function Admin() {
                                         {filteredReceipts.map((receipt) => {
                                             const userInfo = receipt.expand?.user_id;
                                             return (
-                                                <tr key={receipt.id} className="hover:bg-base-200">
+                                                <tr
+                                                    key={receipt.id}
+                                                    className="hover:bg-base-200 cursor-pointer"
+                                                    onClick={() => navigate(`/receipt/${receipt.id}`)}
+                                                    title="Klicka för att se kvitto-detaljer"
+                                                >
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm font-medium text-base-content">
                                                             {userInfo?.name || userInfo?.email || 'N/A'}
@@ -367,7 +372,10 @@ function Admin() {
                                                             <button
                                                                 type="button"
                                                                 className="btn btn-ghost btn-xs mt-1"
-                                                                onClick={() => navigate(`/admin/users/${userInfo.id}`)}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    navigate(`/admin/users/${userInfo.id}`);
+                                                                }}
                                                             >
                                                                 Öppna profil
                                                             </button>
@@ -399,6 +407,7 @@ function Admin() {
                                                         <select
                                                             className={`select select-bordered select-xs ${getStatusBadgeColor(receipt.status)}`}
                                                             value={receipt.status}
+                                                            onClick={(e) => e.stopPropagation()}
                                                             onChange={(e) =>
                                                                 handleStatusChange(receipt.id, receipt.status, e.target.value)
                                                             }
@@ -420,6 +429,7 @@ function Admin() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className="btn btn-ghost btn-xs text-center"
+                                                                    onClick={(e) => e.stopPropagation()}
                                                                 >
                                                                     Visa kvitto
                                                                 </a>
