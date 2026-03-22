@@ -42,8 +42,8 @@ function ResetPassword() {
             return;
         }
 
-        if (password.length < 8) {
-            setError('Lösenordet måste vara minst 8 tecken.');
+        if (password.length < 5) {
+            setError('Lösenordet måste vara minst 5 tecken.');
             return;
         }
 
@@ -68,10 +68,10 @@ function ResetPassword() {
     };
 
     return (
-        <div className="hero min-h-screen bg-base-200 px-4 py-8">
-            <div className="hero-content w-full max-w-md">
+        <div className="hero min-h-screen bg-base-200 px-6 py-12 sm:px-8">
+            <div className="hero-content w-full max-w-md px-0">
                 <div className="card w-full bg-base-100 shadow-2xl border border-base-300">
-                    <div className="card-body gap-6 p-6 sm:p-8">
+                    <div className="card-body gap-6 p-7 sm:p-9">
                         <div className="text-center space-y-3">
                             <div className="badge badge-primary badge-outline">Helsingkrona</div>
                             <h1 className="text-3xl sm:text-4xl font-bold text-base-content">Skapa nytt lösenord</h1>
@@ -105,11 +105,11 @@ function ResetPassword() {
                                     type="password"
                                     autoComplete="new-password"
                                     required
-                                    minLength={8}
+                                    minLength={5}
                                     value={password}
                                     onChange={(event) => setPassword(event.target.value)}
                                     className="input input-bordered input-md w-full"
-                                    placeholder="Minst 8 tecken"
+                                    placeholder="Minst 5 tecken"
                                 />
                             </label>
 
@@ -119,7 +119,7 @@ function ResetPassword() {
                                     type="password"
                                     autoComplete="new-password"
                                     required
-                                    minLength={8}
+                                    minLength={5}
                                     value={passwordConfirm}
                                     onChange={(event) => setPasswordConfirm(event.target.value)}
                                     className="input input-bordered input-md w-full"
