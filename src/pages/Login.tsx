@@ -51,7 +51,11 @@ function Login() {
         if (result.success) {
             setPasswordSetupMessage('Om e-posten finns i systemet har en länk för att skapa lösenord skickats.');
         } else {
-            setPasswordSetupError('Det gick inte att skicka e-post just nu. Försök igen senare.');
+            const debugDetails =
+                'errorMessage' in result && typeof result.errorMessage === 'string'
+                    ? result.errorMessage
+                    : 'Inga extra feldetaljer tillgängliga.';
+            setPasswordSetupError(`Det gick inte att skicka e-post just nu. [TEMP DEBUG] ${debugDetails}`);
         }
 
         setIsPasswordSetupLoading(false);

@@ -25,6 +25,36 @@ interface AuthState {
     isLoading: boolean;
 }
 
+function buildTemporaryDebugErrorMessage(error: unknown): string {
+    if (!error || typeof error !== 'object') {
+        return `Okänt fel: ${String(error)}`;
+    }
+
+    const maybeError = error as {
+        status?: number;
+        url?: string;
+        message?: string;
+        response?: { message?: string; data?: unknown };
+        data?: unknown;
+    };
+
+    const message = maybeError.response?.message || maybeError.message || 'Saknar felmeddelande';
+    const status = maybeError.status ? `status=${maybeError.status}` : 'status=okänd';
+    const url = maybeError.url ? `url=${maybeError.url}` : 'url=okänd';
+
+    let dataSummary = '';
+    const rawData = maybeError.response?.data ?? maybeError.data;
+    if (rawData !== undefined) {
+        try {
+            dataSummary = ` data=${JSON.stringify(rawData)}`;
+        } catch {
+            dataSummary = ' data=[kunde ej serialiseras]';
+        }
+    }
+
+    return `${message} (${status}, ${url})${dataSummary}`;
+}
+
 export function useAuth() {
     const [authState, setAuthState] = useState<AuthState>(() => {
         if (DEV_AUTH_BYPASS) {
@@ -116,7 +146,11 @@ export function useAuth() {
             return { success: true };
         } catch (error) {
             console.error('Password setup request error:', error);
-            return { success: false, error };
+            return {
+                success: false,
+                error,
+                errorMessage: buildTemporaryDebugErrorMessage(error),
+            };
         }
     };
 
