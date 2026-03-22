@@ -12,6 +12,15 @@ interface ReceiptWithUser extends RecordModel {
     };
 }
 
+interface PocketBaseErrorLike {
+    status?: number;
+    message?: string;
+    response?: {
+        message?: string;
+        data?: Record<string, unknown>;
+    };
+}
+
 function Admin() {
     const [receipts, setReceipts] = useState<ReceiptWithUser[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -143,10 +152,50 @@ function Admin() {
             case 'Approved':
                 return 'badge badge-success';
             case 'Paid':
+            case 'Payed':
                 return 'badge badge-info';
             default:
                 return 'badge';
         }
+    };
+
+    const isPaidLikeStatus = (status: string) => status === 'Paid' || status === 'Payed';
+
+    const getAlternativePaidStatus = (status: string) => {
+        if (status === 'Paid') {
+            return 'Payed';
+        }
+
+        if (status === 'Payed') {
+            return 'Paid';
+        }
+
+        return null;
+    };
+
+    const isStatusValidationError = (error: unknown) => {
+        const pbError = error as PocketBaseErrorLike;
+        return pbError?.status === 400 && !!pbError?.response?.data?.status;
+    };
+
+    const buildStatusUpdateErrorMessage = (error: unknown) => {
+        const pbError = error as PocketBaseErrorLike;
+
+        if (pbError?.status === 403) {
+            return 'Behörighet saknas i PocketBase API Rule för receipts.update. Lägg till rollen pqs i update-regeln.';
+        }
+
+        const baseMessage = pbError?.response?.message || pbError?.message || 'Okänt fel.';
+        const data = pbError?.response?.data;
+        if (data) {
+            try {
+                return `${baseMessage} Detaljer: ${JSON.stringify(data)}`;
+            } catch {
+                return baseMessage;
+            }
+        }
+
+        return baseMessage;
     };
 
     const handleStatusChange = (receiptId: string, currentStatus: string, newStatus: string) => {
@@ -158,8 +207,8 @@ function Admin() {
             return;
         }
 
-        // If downgrading from Paid, show confirmation
-        if (currentStatus === 'Paid' && (newStatus === 'Pending' || newStatus === 'Approved')) {
+        // If downgrading from paid status, show confirmation
+        if (isPaidLikeStatus(currentStatus) && (newStatus === 'Pending' || newStatus === 'Approved')) {
             setPendingStatusChange({ receiptId, newStatus, oldStatus: currentStatus });
             setShowConfirmModal(true);
         } else {
@@ -187,14 +236,30 @@ function Admin() {
 
         setUpdatingId(receiptId);
         try {
-            await pb.collection('receipts').update(receiptId, {
-                status: newStatus,
-            });
+            try {
+                await pb.collection('receipts').update(receiptId, {
+                    status: newStatus,
+                });
+            } catch (firstError) {
+                if (!isStatusValidationError(firstError)) {
+                    throw firstError;
+                }
+
+                const alternativeStatus = getAlternativePaidStatus(newStatus);
+                if (!alternativeStatus) {
+                    throw firstError;
+                }
+
+                await pb.collection('receipts').update(receiptId, {
+                    status: alternativeStatus,
+                });
+            }
+
             // Refresh the receipts list
             await fetchReceipts();
         } catch (err) {
             console.error('Error updating receipt status:', err);
-            alert('Det gick inte att uppdatera kvittot.');
+            alert(`Det gick inte att uppdatera kvittot. ${buildStatusUpdateErrorMessage(err)}`);
         } finally {
             setUpdatingId(null);
         }
@@ -414,6 +479,7 @@ function Admin() {
                                                             <option value="Pending">Pending</option>
                                                             <option value="Approved">Approved</option>
                                                             <option value="Paid">Paid</option>
+                                                            <option value="Payed">Payed</option>
                                                         </select>
                                                         {updatingId === receipt.id && (
                                                             <span className="loading loading-spinner loading-xs ml-2"></span>
