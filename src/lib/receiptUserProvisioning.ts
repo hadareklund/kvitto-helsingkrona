@@ -33,6 +33,15 @@ function buildDisplayName(user: UsersRecord, email: string): string {
     return email.split('@')[0] || email;
 }
 
+function buildUsername(user: UsersRecord, email: string): string {
+    const username = String(user.username || '').trim();
+    if (username) {
+        return username;
+    }
+
+    return email.split('@')[0] || email;
+}
+
 export async function ensureReceiptUserForPasswordSetup(email: string): Promise<EnsureReceiptUserResult> {
     const normalizedEmail = email.trim().toLowerCase();
     const escapedEmail = escapeFilterValue(normalizedEmail);
@@ -63,6 +72,7 @@ export async function ensureReceiptUserForPasswordSetup(email: string): Promise<
     const tempPassword = `Tmp!${crypto.randomUUID().replace(/-/g, '')}`;
     const created = await pb.collection('receipt_user').create({
         email: normalizedEmail,
+        username: buildUsername(sourceUser, normalizedEmail),
         password: tempPassword,
         passwordConfirm: tempPassword,
         name: buildDisplayName(sourceUser, normalizedEmail),
