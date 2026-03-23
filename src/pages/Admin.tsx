@@ -348,12 +348,6 @@ function Admin() {
                                 </div>
                             )}
 
-                            {!canUpdateStatus && (
-                                <div className="alert alert-warning">
-                                    <span>{tr('Endast användare med rollen pqe kan ändra kvittostatus.', 'Only users with role pqe can update receipt status.')}</span>
-                                </div>
-                            )}
-
                             <div className="overflow-x-auto">
                                 <table className="table w-full">
                                     <thead className="bg-base-200">
