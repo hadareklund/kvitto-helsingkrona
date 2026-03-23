@@ -9,6 +9,7 @@ import AdminUserProfile from './pages/AdminUserProfile';
 import ResetPassword from './pages/ResetPassword';
 import Settings from './pages/Settings';
 import LanguageToggle from './components/LanguageToggle';
+import SiteLogo from './components/SiteLogo';
 import './App.css';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
+      <SiteLogo />
       <LanguageToggle />
     </BrowserRouter>
   );
