@@ -46,6 +46,17 @@ export async function ensureReceiptUserForPasswordSetup(email: string): Promise<
     const normalizedEmail = email.trim().toLowerCase();
     const escapedEmail = escapeFilterValue(normalizedEmail);
 
+    const existingReceiptUserResult = await pb.collection('receipt_user').getList<RecordModel>(1, 1, {
+        filter: `email = "${escapedEmail}"`,
+    });
+
+    if (existingReceiptUserResult.totalItems > 0) {
+        return {
+            foundInUsers: true,
+            receiptUser: existingReceiptUserResult.items[0],
+        };
+    }
+
     const usersResult = await pb.collection('users').getList<UsersRecord>(1, 1, {
         filter: `email = "${escapedEmail}"`,
     });
@@ -58,16 +69,6 @@ export async function ensureReceiptUserForPasswordSetup(email: string): Promise<
     }
 
     const sourceUser = usersResult.items[0];
-    const receiptUserResult = await pb.collection('receipt_user').getList<RecordModel>(1, 1, {
-        filter: `email = "${escapedEmail}"`,
-    });
-
-    if (receiptUserResult.totalItems > 0) {
-        return {
-            foundInUsers: true,
-            receiptUser: receiptUserResult.items[0],
-        };
-    }
 
     const tempPassword = `Tmp!${crypto.randomUUID().replace(/-/g, '')}`;
     const created = await pb.collection('receipt_user').create({
