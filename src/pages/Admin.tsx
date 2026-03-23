@@ -39,8 +39,8 @@ function Admin() {
     const navigate = useNavigate();
     const { tr, locale } = useLanguage();
     const role = String(user?.role || '').toLowerCase();
-    const hasAdminViewAccess = role === 'admin' || role === 'pqs';
-    const canUpdateStatus = role === 'pqs';
+    const hasAdminViewAccess = role === 'admin' || role === 'pqe';
+    const canUpdateStatus = role === 'pqe';
 
     const users = useMemo(() => {
         const uniqueUsers = new Map<string, { id: string; name: string; email: string }>();
@@ -165,15 +165,15 @@ function Admin() {
 
         if (pbError?.status === 403) {
             return tr(
-                'Behörighet saknas i PocketBase API Rule for receipts.update. Lägg till rollen pqs i update-regeln.',
-                'Permission is missing in PocketBase API Rule for receipts.update. Add role pqs to the update rule.'
+                'Behörighet saknas i PocketBase API Rule for receipts.update. Lägg till rollen pqe i update-regeln.',
+                'Permission is missing in PocketBase API Rule for receipts.update. Add role pqe to the update rule.'
             );
         }
 
         if (pbError?.status === 404) {
             return tr(
-                'PocketBase svarade 404 (resource not found). Vanligtvis betyder det att update-regeln inte matchar användaren eller att du behöver logga ut/in efter att rollen pqs lagts till.',
-                'PocketBase returned 404 (resource not found). Usually this means the update rule does not match the user or you need to sign out/in after role pqs was added.'
+                'PocketBase svarade 404 (resource not found). Vanligtvis betyder det att update-regeln inte matchar användaren eller att du behöver logga ut/in efter att rollen pqe lagts till.',
+                'PocketBase returned 404 (resource not found). Usually this means the update rule does not match the user or you need to sign out/in after role pqe was added.'
             );
         }
 
@@ -350,7 +350,7 @@ function Admin() {
 
                             {!canUpdateStatus && (
                                 <div className="alert alert-warning">
-                                    <span>{tr('Endast användare med rollen pqs kan ändra kvittostatus.', 'Only users with role pqs can update receipt status.')}</span>
+                                    <span>{tr('Endast användare med rollen pqe kan ändra kvittostatus.', 'Only users with role pqe can update receipt status.')}</span>
                                 </div>
                             )}
 

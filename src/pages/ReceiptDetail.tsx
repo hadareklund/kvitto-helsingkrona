@@ -45,7 +45,7 @@ function ReceiptDetail() {
                 const receiptUserId =
                     typeof record.user_id === 'string' ? record.user_id : record.expand?.user_id?.id;
                 const role = String(user.role || '').toLowerCase();
-                const hasAdminViewAccess = role === 'admin' || role === 'pqs';
+                const hasAdminViewAccess = role === 'admin' || role === 'pqe';
 
                 if (!hasAdminViewAccess && receiptUserId !== user.id) {
                     navigate('/dashboard');

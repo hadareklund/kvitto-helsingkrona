@@ -34,7 +34,7 @@ function AdminUserProfile() {
         }
 
         const role = String(user.role || '').toLowerCase();
-        const hasAdminViewAccess = role === 'admin' || role === 'pqs';
+        const hasAdminViewAccess = role === 'admin' || role === 'pqe';
         if (!hasAdminViewAccess) {
             navigate('/dashboard');
             return;

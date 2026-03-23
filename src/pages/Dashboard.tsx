@@ -85,7 +85,7 @@ function Dashboard() {
     }
 
     const role = String(user.role || '').toLowerCase();
-    const hasAdminViewAccess = role === 'admin' || role === 'pqs';
+    const hasAdminViewAccess = role === 'admin' || role === 'pqe';
 
     return (
         <div className="min-h-screen bg-base-100">
