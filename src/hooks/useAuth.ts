@@ -106,13 +106,13 @@ export function useAuth() {
         }
 
         try {
-            const setupResult = await ensureReceiptUserForPasswordSetup(email);
-            if (!setupResult.foundInUsers) {
-                // Keep the response generic to avoid exposing which emails exist.
-                return { success: true };
-            }
+            const normalizedEmail = email.trim().toLowerCase();
 
-            await pb.collection('receipt_user').requestPasswordReset(email.trim().toLowerCase());
+            // Ensure account exists when source data is only in `users`.
+            await ensureReceiptUserForPasswordSetup(normalizedEmail);
+
+            // Always request reset on auth collection to avoid false-positive UI success.
+            await pb.collection('receipt_user').requestPasswordReset(normalizedEmail);
             return { success: true };
         } catch (error) {
             console.error('Password setup request error:', error);
