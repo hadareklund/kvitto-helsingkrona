@@ -7,6 +7,7 @@ import { useLanguage } from '../i18n/LanguageContext';
 import MoneyRain from '../components/MoneyRain';
 
 const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
+const SUCCESS_REDIRECT_DELAY_MS = 5500;
 
 function SubmitReceipt() {
     const [amount, setAmount] = useState('');
@@ -107,7 +108,7 @@ function SubmitReceipt() {
 
                 setTimeout(() => {
                     navigate('/dashboard');
-                }, 1000);
+                }, SUCCESS_REDIRECT_DELAY_MS);
                 return;
             }
 
@@ -134,10 +135,10 @@ function SubmitReceipt() {
             const fileInput = document.getElementById('receipt_image') as HTMLInputElement;
             if (fileInput) fileInput.value = '';
 
-            // Redirect to dashboard after 2 seconds
+            // Keep celebration visible a bit longer before redirecting.
             setTimeout(() => {
                 navigate('/dashboard');
-            }, 2000);
+            }, SUCCESS_REDIRECT_DELAY_MS);
         } catch (err) {
             console.error('Error submitting receipt:', err);
             setError(tr('Ett fel uppstod vid inskick av kvittot. Försök igen.', 'An error occurred while submitting the receipt. Please try again.'));
