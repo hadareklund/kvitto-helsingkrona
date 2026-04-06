@@ -32,6 +32,7 @@ function ReceiptDetail() {
     const [commentMessage, setCommentMessage] = useState('');
     const [isEditingComment, setIsEditingComment] = useState(false);
     const [isCommentMenuOpen, setIsCommentMenuOpen] = useState(false);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
     useEffect(() => {
         if (isAuthLoading) {
@@ -154,8 +155,33 @@ function ReceiptDetail() {
         }
     };
 
+    const handleStatusChange = async (newStatus: string) => {
+        if (!receipt || role !== 'pqe') {
+            return;
+        }
+
+        if (newStatus === String(receipt.status || '')) {
+            return;
+        }
+
+        setIsUpdatingStatus(true);
+        try {
+            await pb.collection('receipts').update(receipt.id, {
+                status: newStatus,
+            });
+
+            setReceipt((current) => (current ? { ...current, status: newStatus } : current));
+        } catch (err) {
+            console.error('Error updating receipt status:', err);
+            setError(tr('Det gick inte att uppdatera status.', 'Could not update status.'));
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
     const role = String(user?.role || '').toLowerCase();
     const hasAdminViewAccess = role === 'admin' || role === 'pqe';
+    const canUpdateStatus = role === 'pqe';
     const canEditComment = role === 'pqe';
     const canViewComment = role === 'admin' || role === 'pqe';
     const submittedByUser = receipt?.expand?.user_id;
@@ -282,9 +308,25 @@ function ReceiptDetail() {
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
                                         <span className="text-sm text-base-content/70">Status</span>
-                                        <span className={getStatusBadgeColor(String(receipt.status || ''))}>
-                                            {String(receipt.status || '-')}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            {canUpdateStatus ? (
+                                                <select
+                                                    className={`select select-bordered select-xs ${getStatusBadgeColor(String(receipt.status || ''))}`}
+                                                    value={String(receipt.status || 'Pending')}
+                                                    onChange={(e) => handleStatusChange(e.target.value)}
+                                                    disabled={isUpdatingStatus}
+                                                >
+                                                    <option value="Pending">Pending</option>
+                                                    <option value="Paid">Paid</option>
+                                                    <option value="Bokförd">Bokförd</option>
+                                                </select>
+                                            ) : (
+                                                <span className={getStatusBadgeColor(String(receipt.status || ''))}>
+                                                    {String(receipt.status || '-')}
+                                                </span>
+                                            )}
+                                            {isUpdatingStatus && <span className="loading loading-spinner loading-xs" />}
+                                        </div>
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
                                         <span className="text-sm text-base-content/70">{tr('Kvittonummer', 'Receipt number')}</span>

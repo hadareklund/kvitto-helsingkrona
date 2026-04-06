@@ -22,6 +22,10 @@ function AdminUserProfile() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [copyMessage, setCopyMessage] = useState('');
+    const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+    const role = String(user?.role || '').toLowerCase();
+    const canUpdateStatus = role === 'pqe';
 
     useEffect(() => {
         if (isAuthLoading) {
@@ -106,6 +110,32 @@ function AdminUserProfile() {
             console.error('Copy failed:', err);
             setCopyMessage(tr('Kunde inte kopiera', 'Could not copy'));
             window.setTimeout(() => setCopyMessage(''), 2000);
+        }
+    };
+
+    const handleStatusChange = async (receiptId: string, currentStatus: string, newStatus: string) => {
+        if (!canUpdateStatus || newStatus === currentStatus) {
+            return;
+        }
+
+        setUpdatingId(receiptId);
+        try {
+            await pb.collection('receipts').update(receiptId, {
+                status: newStatus,
+            });
+
+            setReceipts((current) =>
+                current.map((receipt) =>
+                    receipt.id === receiptId
+                        ? ({ ...receipt, status: newStatus } as ReceiptWithUser)
+                        : receipt
+                )
+            );
+        } catch (err) {
+            console.error('Error updating receipt status:', err);
+            setError(tr('Det gick inte att uppdatera status.', 'Could not update status.'));
+        } finally {
+            setUpdatingId(null);
         }
     };
 
@@ -276,9 +306,24 @@ function AdminUserProfile() {
                                                         </td>
                                                         <td>{Number(receipt.amount || 0).toFixed(2)} kr</td>
                                                         <td>
-                                                            <span className={getStatusBadgeColor(String(receipt.status || ''))}>
-                                                                {String(receipt.status || '-')}
-                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <select
+                                                                    className={`select select-bordered select-xs ${getStatusBadgeColor(String(receipt.status || ''))}`}
+                                                                    value={String(receipt.status || 'Pending')}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                    onChange={(e) =>
+                                                                        handleStatusChange(receipt.id, String(receipt.status || ''), e.target.value)
+                                                                    }
+                                                                    disabled={!canUpdateStatus || updatingId === receipt.id}
+                                                                >
+                                                                    <option value="Pending">Pending</option>
+                                                                    <option value="Paid">Paid</option>
+                                                                    <option value="Bokförd">Bokförd</option>
+                                                                </select>
+                                                                {updatingId === receipt.id && (
+                                                                    <span className="loading loading-spinner loading-xs" />
+                                                                )}
+                                                            </div>
                                                         </td>
                                                         <td>
                                                             <button

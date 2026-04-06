@@ -142,16 +142,47 @@ function Dashboard() {
                             </div>
                         </div>
                     ) : receipts.length === 0 ? (
-                        <div className="p-8 text-center">
-                            <p className="text-base-content/70 mb-4">
+                        <div className="p-8 space-y-8">
+                            <p className="text-base-content/70 text-center">
                                 {tr('Du har inga kvitton ännu.', 'You have no receipts yet.')}
                             </p>
-                            <button
-                                onClick={() => navigate('/submit')}
-                                className="btn btn-primary btn-sm"
-                            >
-                                {tr('Skicka in ditt första kvitto', 'Submit your first receipt')}
-                            </button>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="card bg-base-200 shadow-sm">
+                                    <figure className="px-4 pt-4">
+                                        <img
+                                            src="/angry-qurrat.png"
+                                            alt="Innan du skickat in ditt första kvitto"
+                                            className="rounded-lg w-full object-cover max-h-[320px]"
+                                        />
+                                    </figure>
+                                    <div className="card-body pt-4 text-center">
+                                        <h3 className="font-semibold text-base-content">Innan du skickat in ditt första kvitto</h3>
+                                    </div>
+                                </div>
+
+                                <div className="card bg-base-200 shadow-sm">
+                                    <figure className="px-4 pt-4">
+                                        <img
+                                            src="/happy-qurrat.jpg"
+                                            alt="Efter du skickat in ditt första kvitto"
+                                            className="rounded-lg w-full object-cover max-h-[320px]"
+                                        />
+                                    </figure>
+                                    <div className="card-body pt-4 text-center">
+                                        <h3 className="font-semibold text-base-content">Efter du skickat in ditt första kvitto</h3>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="text-center">
+                                <button
+                                    onClick={() => navigate('/submit')}
+                                    className="btn btn-primary btn-lg px-8"
+                                >
+                                    {tr('Skicka in ditt första kvitto', 'Submit your first receipt')}
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
