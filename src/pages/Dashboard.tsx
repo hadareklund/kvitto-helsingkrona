@@ -152,12 +152,12 @@ function Dashboard() {
                                     <figure className="px-4 pt-4">
                                         <img
                                             src="/angry-qurrat.png"
-                                            alt="Innan du skickat in ditt första kvitto"
+                                            alt="Innan du har skickat in ditt första kvitto"
                                             className="rounded-lg w-full object-cover max-h-[320px]"
                                         />
                                     </figure>
                                     <div className="card-body pt-4 text-center">
-                                        <h3 className="font-semibold text-base-content">Innan du skickat in ditt första kvitto</h3>
+                                        <h3 className="font-semibold text-base-content">Innan du har skickat in ditt första kvitto</h3>
                                     </div>
                                 </div>
 
@@ -165,12 +165,12 @@ function Dashboard() {
                                     <figure className="px-4 pt-4">
                                         <img
                                             src="/happy-qurrat.jpg"
-                                            alt="Efter du skickat in ditt första kvitto"
+                                            alt="Efter du har skickat in ditt första kvitto"
                                             className="rounded-lg w-full object-cover max-h-[320px]"
                                         />
                                     </figure>
                                     <div className="card-body pt-4 text-center">
-                                        <h3 className="font-semibold text-base-content">Efter du skickat in ditt första kvitto</h3>
+                                        <h3 className="font-semibold text-base-content">Efter du har skickat in ditt första kvitto</h3>
                                     </div>
                                 </div>
                             </div>
