@@ -18,6 +18,12 @@ function Settings() {
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordSuccessMessage, setPasswordSuccessMessage] = useState('');
 
     useEffect(() => {
         if (isAuthLoading) {
@@ -83,6 +89,61 @@ function Settings() {
             setError(tr('Det gick inte att spara ändringarna. Försök igen.', 'Could not save your changes. Please try again.'));
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handlePasswordChange = async (event: FormEvent) => {
+        event.preventDefault();
+        setPasswordError('');
+        setPasswordSuccessMessage('');
+
+        if (!user) {
+            setPasswordError(tr('Du måste vara inloggad.', 'You must be signed in.'));
+            return;
+        }
+
+        if (!currentPassword.trim()) {
+            setPasswordError(
+                tr('Ange ditt nuvarande lösenord först.', 'Enter your current password first.')
+            );
+            return;
+        }
+
+        if (!newPassword || !confirmNewPassword) {
+            setPasswordError(tr('Fyll i nytt lösenord i båda fälten.', 'Fill in the new password in both fields.'));
+            return;
+        }
+
+        if (newPassword !== confirmNewPassword) {
+            setPasswordError(tr('Nya lösenorden matchar inte.', 'The new passwords do not match.'));
+            return;
+        }
+
+        setIsChangingPassword(true);
+
+        try {
+            if (!DEV_AUTH_BYPASS) {
+                await pb.collection('receipt_user').update(user.id, {
+                    oldPassword: currentPassword,
+                    password: newPassword,
+                    passwordConfirm: confirmNewPassword,
+                });
+            }
+
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmNewPassword('');
+            setPasswordSuccessMessage(tr('Lösenordet har uppdaterats.', 'Password has been updated.'));
+        } catch (changeError) {
+            console.error('Error changing password:', changeError);
+            setPasswordError(
+                tr(
+                    'Det gick inte att byta lösenord. Kontrollera ditt nuvarande lösenord och försök igen.',
+                    'Could not change password. Verify your current password and try again.'
+                )
+            );
+        } finally {
+            setIsChangingPassword(false);
         }
     };
 
@@ -169,6 +230,84 @@ function Settings() {
                                 </button>
                             </div>
                         </form>
+
+                        <div className="divider my-2" />
+
+                        <div className="space-y-2">
+                            <h2 className="text-xl font-semibold text-base-content">{tr('Byt lösenord', 'Change password')}</h2>
+                            <p className="text-sm text-base-content/70">
+                                {tr('Ange ditt nuvarande lösenord för att kunna byta till ett nytt.', 'Enter your current password before setting a new one.')}
+                            </p>
+
+                            {passwordError && (
+                                <div role="alert" className="alert alert-error mt-2">
+                                    <span>{passwordError}</span>
+                                </div>
+                            )}
+
+                            {passwordSuccessMessage && (
+                                <div role="status" className="alert alert-success mt-2">
+                                    <span>{passwordSuccessMessage}</span>
+                                </div>
+                            )}
+
+                            <form onSubmit={handlePasswordChange} className="space-y-4 mt-2">
+                                <label className="form-control w-full gap-2">
+                                    <span className="label-text font-medium text-base-content">
+                                        {tr('Nuvarande lösenord', 'Current password')}
+                                    </span>
+                                    <input
+                                        type="password"
+                                        value={currentPassword}
+                                        onChange={(event) => setCurrentPassword(event.target.value)}
+                                        className="input input-bordered w-full"
+                                        autoComplete="current-password"
+                                        required
+                                    />
+                                </label>
+
+                                <label className="form-control w-full gap-2">
+                                    <span className="label-text font-medium text-base-content">
+                                        {tr('Nytt lösenord', 'New password')}
+                                    </span>
+                                    <input
+                                        type="password"
+                                        value={newPassword}
+                                        onChange={(event) => setNewPassword(event.target.value)}
+                                        className="input input-bordered w-full"
+                                        autoComplete="new-password"
+                                        required
+                                    />
+                                </label>
+
+                                <label className="form-control w-full gap-2">
+                                    <span className="label-text font-medium text-base-content">
+                                        {tr('Bekräfta nytt lösenord', 'Confirm new password')}
+                                    </span>
+                                    <input
+                                        type="password"
+                                        value={confirmNewPassword}
+                                        onChange={(event) => setConfirmNewPassword(event.target.value)}
+                                        className="input input-bordered w-full"
+                                        autoComplete="new-password"
+                                        required
+                                    />
+                                </label>
+
+                                <div className="pt-2">
+                                    <button type="submit" className="btn btn-primary" disabled={isChangingPassword}>
+                                        {isChangingPassword ? (
+                                            <>
+                                                <span className="loading loading-spinner loading-sm" />
+                                                {tr('Byter...', 'Updating...')}
+                                            </>
+                                        ) : (
+                                            tr('Byt lösenord', 'Change password')
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
