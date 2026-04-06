@@ -5,9 +5,16 @@ import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../i18n/LanguageContext';
 import type { RecordModel } from 'pocketbase';
 
+interface ReceiptUserRecord extends RecordModel {
+    name?: string;
+    email?: string;
+    bank_name?: string;
+    account_number?: string;
+}
+
 interface ReceiptWithUser extends RecordModel {
     expand?: {
-        user_id?: RecordModel;
+        user_id?: ReceiptUserRecord;
     };
 }
 
@@ -111,6 +118,12 @@ function ReceiptDetail() {
         navigate('/login');
     };
 
+    const role = String(user?.role || '').toLowerCase();
+    const hasAdminViewAccess = role === 'admin' || role === 'pqe';
+    const submittedByUser = receipt?.expand?.user_id;
+    const submittedByUserId =
+        typeof receipt?.user_id === 'string' ? receipt.user_id : submittedByUser?.id;
+
     if (isAuthLoading) {
         return (
             <div className="min-h-screen bg-base-100 flex items-center justify-center">
@@ -191,6 +204,37 @@ function ReceiptDetail() {
                                         <p className="text-sm text-base-content/70 mb-1">{tr('Anledning', 'Reason')}</p>
                                         <p className="text-sm">{String(receipt.anledning || '-')}</p>
                                     </div>
+
+                                    <div className="divider my-1" />
+
+                                    <div className="rounded-box bg-base-200 p-3 space-y-2">
+                                        <p className="text-sm text-base-content/70">{tr('Inskickat av', 'Submitted by')}</p>
+                                        <p className="font-medium">{String(submittedByUser?.name || submittedByUser?.email || '-')}</p>
+                                        {submittedByUser?.email && (
+                                            <p className="text-sm text-base-content/80 break-all">{String(submittedByUser.email)}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="rounded-box bg-base-200 p-3 space-y-2">
+                                        <p className="text-sm text-base-content/70">{tr('Bankuppgifter', 'Bank details')}</p>
+                                        <div className="flex items-center justify-between gap-4">
+                                            <span className="text-sm text-base-content/70">{tr('Bank', 'Bank')}</span>
+                                            <span className="font-medium">{String(submittedByUser?.bank_name || '-')}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-4">
+                                            <span className="text-sm text-base-content/70">{tr('Kontonummer', 'Account number')}</span>
+                                            <span className="font-medium">{String(submittedByUser?.account_number || '-')}</span>
+                                        </div>
+                                    </div>
+
+                                    {hasAdminViewAccess && submittedByUserId && (
+                                        <button
+                                            onClick={() => navigate(`/admin/users/${submittedByUserId}`)}
+                                            className="btn btn-primary btn-sm w-full"
+                                        >
+                                            {tr('Öppna användarprofil', 'Open user profile')}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
