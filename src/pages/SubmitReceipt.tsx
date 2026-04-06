@@ -201,7 +201,7 @@ function SubmitReceipt() {
                             <p className="text-sm">{warning}</p>
                             <button
                                 type="button"
-                                className="btn btn-xs btn-warning"
+                                className="btn btn-sm btn-warning whitespace-nowrap"
                                 onClick={() => navigate('/settings')}
                             >
                                 {tr('Gå till inställningar', 'Go to settings')}
