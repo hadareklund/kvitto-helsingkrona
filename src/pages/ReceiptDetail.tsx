@@ -165,6 +165,8 @@ function ReceiptDetail() {
         typeof receipt?.user_id === 'string' ? receipt.user_id : submittedByUser?.id;
     const existingComment = String(receipt?.kommentar || '').trim();
     const isCommentDirty = commentDraft.trim() !== existingComment;
+    const hasExistingComment = existingComment.length > 0;
+    const shouldShowEditor = canEditComment && (!hasExistingComment || isEditingComment);
 
     const startEditingComment = () => {
         setIsEditingComment(true);
@@ -207,6 +209,10 @@ function ReceiptDetail() {
         } finally {
             setIsSavingComment(false);
         }
+    };
+
+    const toggleCommentMenu = () => {
+        setIsCommentMenuOpen((current) => !current);
     };
 
     if (isAuthLoading) {
@@ -312,7 +318,7 @@ function ReceiptDetail() {
                                                     <p className="text-sm font-semibold text-amber-950">
                                                         {tr('Kommentar', 'Comment')}
                                                     </p>
-                                                    {canEditComment && isEditingComment ? (
+                                                    {shouldShowEditor ? (
                                                         <textarea
                                                             value={commentDraft}
                                                             onChange={(e) => setCommentDraft(e.target.value)}
@@ -327,39 +333,48 @@ function ReceiptDetail() {
                                                     )}
                                                 </div>
 
-                                                {canEditComment && (
-                                                    <div className="dropdown dropdown-end">
+                                                {canEditComment && hasExistingComment && !isEditingComment && (
+                                                    <div className="relative">
                                                         <button
                                                             type="button"
-                                                            tabIndex={0}
-                                                            className="btn btn-ghost btn-xs rounded-full text-amber-950 hover:bg-amber-200"
-                                                            onClick={() => setIsCommentMenuOpen((current) => !current)}
+                                                            className="btn btn-ghost btn-xs btn-circle text-amber-950 hover:bg-amber-200"
+                                                            onClick={toggleCommentMenu}
                                                             aria-label={tr('Kommentaralternativ', 'Comment options')}
                                                         >
-                                                            ⋯
+                                                            <svg
+                                                                viewBox="0 0 24 24"
+                                                                className="h-5 w-5"
+                                                                fill="currentColor"
+                                                                aria-hidden="true"
+                                                            >
+                                                                <circle cx="12" cy="5" r="1.9" />
+                                                                <circle cx="12" cy="12" r="1.9" />
+                                                                <circle cx="12" cy="19" r="1.9" />
+                                                            </svg>
                                                         </button>
                                                         {isCommentMenuOpen && (
-                                                            <ul
-                                                                tabIndex={0}
-                                                                className="menu dropdown-content z-[1] mt-2 w-36 rounded-box bg-base-100 p-2 shadow"
-                                                            >
-                                                                <li>
-                                                                    <button type="button" onClick={startEditingComment}>
-                                                                        {tr('Ändra', 'Edit')}
-                                                                    </button>
-                                                                </li>
-                                                                <li>
-                                                                    <button type="button" onClick={handleDeleteComment}>
-                                                                        {tr('Ta bort', 'Delete')}
-                                                                    </button>
-                                                                </li>
-                                                            </ul>
+                                                            <div className="absolute right-0 top-10 z-10 w-40 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={startEditingComment}
+                                                                    className="block w-full rounded-btn px-3 py-2 text-left text-sm hover:bg-base-200"
+                                                                >
+                                                                    {tr('Ändra', 'Edit')}
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={handleDeleteComment}
+                                                                    className="block w-full rounded-btn px-3 py-2 text-left text-sm hover:bg-base-200"
+                                                                >
+                                                                    {tr('Ta bort', 'Delete')}
+                                                                </button>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 )}
                                             </div>
 
-                                            {canEditComment && isEditingComment && isCommentDirty && (
+                                            {canEditComment && shouldShowEditor && isCommentDirty && (
                                                 <div className="mt-3 flex flex-wrap items-center gap-2">
                                                     <button
                                                         onClick={handleSaveComment}
@@ -368,13 +383,15 @@ function ReceiptDetail() {
                                                     >
                                                         {isSavingComment ? tr('Sparar...', 'Saving...') : tr('Spara kommentar', 'Save comment')}
                                                     </button>
-                                                    <button
-                                                        onClick={cancelEditingComment}
-                                                        className="btn btn-sm btn-ghost text-amber-950 hover:bg-amber-200"
-                                                        disabled={isSavingComment}
-                                                    >
-                                                        {tr('Avbryt', 'Cancel')}
-                                                    </button>
+                                                    {hasExistingComment && (
+                                                        <button
+                                                            onClick={cancelEditingComment}
+                                                            className="btn btn-sm btn-ghost text-amber-950 hover:bg-amber-200"
+                                                            disabled={isSavingComment}
+                                                        >
+                                                            {tr('Avbryt', 'Cancel')}
+                                                        </button>
+                                                    )}
                                                 </div>
                                             )}
 
