@@ -13,6 +13,7 @@ interface ReceiptUserRecord extends RecordModel {
 }
 
 interface ReceiptWithUser extends RecordModel {
+    kommentar?: string;
     expand?: {
         user_id?: ReceiptUserRecord;
     };
@@ -26,6 +27,9 @@ function ReceiptDetail() {
     const [receipt, setReceipt] = useState<ReceiptWithUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [commentDraft, setCommentDraft] = useState('');
+    const [isSavingComment, setIsSavingComment] = useState(false);
+    const [commentMessage, setCommentMessage] = useState('');
 
     useEffect(() => {
         if (isAuthLoading) {
@@ -60,6 +64,7 @@ function ReceiptDetail() {
                 }
 
                 setReceipt(record);
+                setCommentDraft(String(record.kommentar || ''));
             } catch (err) {
                 console.error('Error fetching receipt details:', err);
                 setError(tr('Det gick inte att hämta kvittot.', 'Could not fetch the receipt.'));
@@ -118,11 +123,39 @@ function ReceiptDetail() {
         navigate('/login');
     };
 
+    const handleSaveComment = async () => {
+        if (!receipt || role !== 'pqe') {
+            return;
+        }
+
+        setIsSavingComment(true);
+        setCommentMessage('');
+
+        try {
+            const updated = await pb.collection('receipts').update<ReceiptWithUser>(receipt.id, {
+                kommentar: commentDraft.trim(),
+            });
+
+            setReceipt(updated);
+            setCommentDraft(String(updated.kommentar || ''));
+            setCommentMessage(tr('Kommentaren sparades.', 'Comment saved.'));
+            window.setTimeout(() => setCommentMessage(''), 2500);
+        } catch (err) {
+            console.error('Error saving comment:', err);
+            setCommentMessage(tr('Det gick inte att spara kommentaren.', 'Could not save the comment.'));
+        } finally {
+            setIsSavingComment(false);
+        }
+    };
+
     const role = String(user?.role || '').toLowerCase();
     const hasAdminViewAccess = role === 'admin' || role === 'pqe';
+    const canEditComment = role === 'pqe';
+    const canViewComment = role === 'admin' || role === 'pqe';
     const submittedByUser = receipt?.expand?.user_id;
     const submittedByUserId =
         typeof receipt?.user_id === 'string' ? receipt.user_id : submittedByUser?.id;
+    const existingComment = String(receipt?.kommentar || '').trim();
 
     if (isAuthLoading) {
         return (
@@ -219,6 +252,50 @@ function ReceiptDetail() {
                                         <p className="text-sm text-base-content/70 mb-1">{tr('Anledning', 'Reason')}</p>
                                         <p className="text-sm">{String(receipt.anledning || '-')}</p>
                                     </div>
+
+                                    {canViewComment && (
+                                        <div className="rounded-box border border-amber-300 bg-amber-100 px-4 py-3 shadow-md rotate-[-1deg]">
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-sm font-semibold text-amber-950">
+                                                        {tr('Kommentar', 'Comment')}
+                                                    </p>
+                                                    {canEditComment ? (
+                                                        <textarea
+                                                            value={commentDraft}
+                                                            onChange={(e) => setCommentDraft(e.target.value)}
+                                                            placeholder={tr('Skriv en kommentar...', 'Write a comment...')}
+                                                            className="textarea textarea-bordered mt-2 w-full bg-amber-50 text-amber-950 placeholder:text-amber-700 resize-none"
+                                                            rows={4}
+                                                        />
+                                                    ) : (
+                                                        <p className="mt-2 whitespace-pre-wrap text-sm text-amber-950">
+                                                            {existingComment || tr('Ingen kommentar än.', 'No comment yet.')}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {canEditComment && (
+                                                <div className="mt-3 flex flex-wrap items-center gap-2">
+                                                    <button
+                                                        onClick={handleSaveComment}
+                                                        className="btn btn-sm bg-amber-300 border-amber-400 text-amber-950 hover:bg-amber-200"
+                                                        disabled={isSavingComment}
+                                                    >
+                                                        {isSavingComment ? tr('Sparar...', 'Saving...') : tr('Spara kommentar', 'Save comment')}
+                                                    </button>
+                                                    <span className="text-xs text-amber-900/80">
+                                                        {tr('Endast PQE kan ändra denna kommentar.', 'Only PQE can edit this comment.')}
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {commentMessage && (
+                                                <p className="mt-2 text-sm text-amber-950">{commentMessage}</p>
+                                            )}
+                                        </div>
+                                    )}
 
                                     {hasAdminViewAccess && submittedByUserId && (
                                         <button
