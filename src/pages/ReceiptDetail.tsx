@@ -146,8 +146,6 @@ function ReceiptDetail() {
             setCommentDraft(String(updated.kommentar || ''));
             setIsEditingComment(false);
             setIsCommentMenuOpen(false);
-            setCommentMessage(tr('Kommentaren sparades.', 'Comment saved.'));
-            window.setTimeout(() => setCommentMessage(''), 2500);
         } catch (err) {
             console.error('Error saving comment:', err);
             setCommentMessage(tr('Det gick inte att spara kommentaren.', 'Could not save the comment.'));
@@ -164,7 +162,8 @@ function ReceiptDetail() {
     const submittedByUserId =
         typeof receipt?.user_id === 'string' ? receipt.user_id : submittedByUser?.id;
     const existingComment = String(receipt?.kommentar || '').trim();
-    const isCommentDirty = commentDraft.trim() !== existingComment;
+    const currentCommentValue = String(receipt?.kommentar || '');
+    const isCommentDirty = commentDraft !== currentCommentValue;
     const hasExistingComment = existingComment.length > 0;
     const shouldShowEditor = canEditComment && (!hasExistingComment || isEditingComment);
 
@@ -184,11 +183,6 @@ function ReceiptDetail() {
             return;
         }
 
-        const confirmed = window.confirm(tr('Vill du ta bort kommentaren?', 'Do you want to delete the comment?'));
-        if (!confirmed) {
-            return;
-        }
-
         setIsSavingComment(true);
         setCommentMessage('');
 
@@ -201,8 +195,6 @@ function ReceiptDetail() {
             setCommentDraft('');
             setIsEditingComment(false);
             setIsCommentMenuOpen(false);
-            setCommentMessage(tr('Kommentaren togs bort.', 'Comment deleted.'));
-            window.setTimeout(() => setCommentMessage(''), 2500);
         } catch (err) {
             console.error('Error deleting comment:', err);
             setCommentMessage(tr('Det gick inte att ta bort kommentaren.', 'Could not delete the comment.'));
