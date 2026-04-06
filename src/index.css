@@ -10,3 +10,29 @@ body,
 body {
   margin: 0;
 }
+
+@keyframes money-rain-fall {
+  0% {
+    transform: translate3d(0, -12vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(var(--money-drift, 0vw), 112vh, 0) rotate(340deg);
+    opacity: 0;
+  }
+}
+
+.money-rain-item {
+  position: absolute;
+  top: -12vh;
+  animation-name: money-rain-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}

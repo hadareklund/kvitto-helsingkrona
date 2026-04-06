@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import pb from '../lib/pocketbase';
 import { useLanguage } from '../i18n/LanguageContext';
+import MoneyRain from '../components/MoneyRain';
 
 const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
 
@@ -173,6 +174,7 @@ function SubmitReceipt() {
 
     return (
         <div className="min-h-screen bg-base-100 py-12 px-4 sm:px-6 lg:px-8">
+            {success && <MoneyRain count={50} />}
             <div className="max-w-2xl mx-auto">
                 <div className="card bg-base-100 shadow-xl px-8 py-6">
                     <h2 className="text-2xl font-bold text-base-content mb-6">
