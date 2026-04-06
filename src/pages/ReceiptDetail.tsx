@@ -30,6 +30,8 @@ function ReceiptDetail() {
     const [commentDraft, setCommentDraft] = useState('');
     const [isSavingComment, setIsSavingComment] = useState(false);
     const [commentMessage, setCommentMessage] = useState('');
+    const [isEditingComment, setIsEditingComment] = useState(false);
+    const [isCommentMenuOpen, setIsCommentMenuOpen] = useState(false);
 
     useEffect(() => {
         if (isAuthLoading) {
@@ -65,6 +67,8 @@ function ReceiptDetail() {
 
                 setReceipt(record);
                 setCommentDraft(String(record.kommentar || ''));
+                setIsEditingComment(false);
+                setIsCommentMenuOpen(false);
             } catch (err) {
                 console.error('Error fetching receipt details:', err);
                 setError(tr('Det gick inte att hämta kvittot.', 'Could not fetch the receipt.'));
@@ -128,16 +132,20 @@ function ReceiptDetail() {
             return;
         }
 
+        const nextComment = commentDraft.trim();
+
         setIsSavingComment(true);
         setCommentMessage('');
 
         try {
             const updated = await pb.collection('receipts').update<ReceiptWithUser>(receipt.id, {
-                kommentar: commentDraft.trim(),
+                kommentar: nextComment,
             });
 
             setReceipt(updated);
             setCommentDraft(String(updated.kommentar || ''));
+            setIsEditingComment(false);
+            setIsCommentMenuOpen(false);
             setCommentMessage(tr('Kommentaren sparades.', 'Comment saved.'));
             window.setTimeout(() => setCommentMessage(''), 2500);
         } catch (err) {
@@ -156,6 +164,50 @@ function ReceiptDetail() {
     const submittedByUserId =
         typeof receipt?.user_id === 'string' ? receipt.user_id : submittedByUser?.id;
     const existingComment = String(receipt?.kommentar || '').trim();
+    const isCommentDirty = commentDraft.trim() !== existingComment;
+
+    const startEditingComment = () => {
+        setIsEditingComment(true);
+        setIsCommentMenuOpen(false);
+    };
+
+    const cancelEditingComment = () => {
+        setIsEditingComment(false);
+        setCommentDraft(existingComment);
+        setIsCommentMenuOpen(false);
+    };
+
+    const handleDeleteComment = async () => {
+        if (!receipt || role !== 'pqe') {
+            return;
+        }
+
+        const confirmed = window.confirm(tr('Vill du ta bort kommentaren?', 'Do you want to delete the comment?'));
+        if (!confirmed) {
+            return;
+        }
+
+        setIsSavingComment(true);
+        setCommentMessage('');
+
+        try {
+            const updated = await pb.collection('receipts').update<ReceiptWithUser>(receipt.id, {
+                kommentar: '',
+            });
+
+            setReceipt(updated);
+            setCommentDraft('');
+            setIsEditingComment(false);
+            setIsCommentMenuOpen(false);
+            setCommentMessage(tr('Kommentaren togs bort.', 'Comment deleted.'));
+            window.setTimeout(() => setCommentMessage(''), 2500);
+        } catch (err) {
+            console.error('Error deleting comment:', err);
+            setCommentMessage(tr('Det gick inte att ta bort kommentaren.', 'Could not delete the comment.'));
+        } finally {
+            setIsSavingComment(false);
+        }
+    };
 
     if (isAuthLoading) {
         return (
@@ -260,7 +312,7 @@ function ReceiptDetail() {
                                                     <p className="text-sm font-semibold text-amber-950">
                                                         {tr('Kommentar', 'Comment')}
                                                     </p>
-                                                    {canEditComment ? (
+                                                    {canEditComment && isEditingComment ? (
                                                         <textarea
                                                             value={commentDraft}
                                                             onChange={(e) => setCommentDraft(e.target.value)}
@@ -274,9 +326,40 @@ function ReceiptDetail() {
                                                         </p>
                                                     )}
                                                 </div>
+
+                                                {canEditComment && (
+                                                    <div className="dropdown dropdown-end">
+                                                        <button
+                                                            type="button"
+                                                            tabIndex={0}
+                                                            className="btn btn-ghost btn-xs rounded-full text-amber-950 hover:bg-amber-200"
+                                                            onClick={() => setIsCommentMenuOpen((current) => !current)}
+                                                            aria-label={tr('Kommentaralternativ', 'Comment options')}
+                                                        >
+                                                            ⋯
+                                                        </button>
+                                                        {isCommentMenuOpen && (
+                                                            <ul
+                                                                tabIndex={0}
+                                                                className="menu dropdown-content z-[1] mt-2 w-36 rounded-box bg-base-100 p-2 shadow"
+                                                            >
+                                                                <li>
+                                                                    <button type="button" onClick={startEditingComment}>
+                                                                        {tr('Ändra', 'Edit')}
+                                                                    </button>
+                                                                </li>
+                                                                <li>
+                                                                    <button type="button" onClick={handleDeleteComment}>
+                                                                        {tr('Ta bort', 'Delete')}
+                                                                    </button>
+                                                                </li>
+                                                            </ul>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            {canEditComment && (
+                                            {canEditComment && isEditingComment && isCommentDirty && (
                                                 <div className="mt-3 flex flex-wrap items-center gap-2">
                                                     <button
                                                         onClick={handleSaveComment}
@@ -285,9 +368,13 @@ function ReceiptDetail() {
                                                     >
                                                         {isSavingComment ? tr('Sparar...', 'Saving...') : tr('Spara kommentar', 'Save comment')}
                                                     </button>
-                                                    <span className="text-xs text-amber-900/80">
-                                                        {tr('Endast PQE kan ändra denna kommentar.', 'Only PQE can edit this comment.')}
-                                                    </span>
+                                                    <button
+                                                        onClick={cancelEditingComment}
+                                                        className="btn btn-sm btn-ghost text-amber-950 hover:bg-amber-200"
+                                                        disabled={isSavingComment}
+                                                    >
+                                                        {tr('Avbryt', 'Cancel')}
+                                                    </button>
                                                 </div>
                                             )}
 
