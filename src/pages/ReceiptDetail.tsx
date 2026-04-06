@@ -200,31 +200,24 @@ function ReceiptDetail() {
                                         <span className="text-sm text-base-content/70">{tr('Kvittonummer', 'Receipt number')}</span>
                                         <span className="font-medium">{String(receipt.receipt_number || '-')}</span>
                                     </div>
+                                    <div className="flex items-start justify-between gap-4">
+                                        <span className="text-sm text-base-content/70">{tr('Inskickat av', 'Submitted by')}</span>
+                                        <span className="font-medium text-right break-all">
+                                            {String(submittedByUser?.name || submittedByUser?.email || '-')}
+                                            {submittedByUser?.email && submittedByUser?.name ? ` (${String(submittedByUser.email)})` : ''}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <span className="text-sm text-base-content/70">{tr('Bank', 'Bank')}</span>
+                                        <span className="font-medium">{String(submittedByUser?.bank_name || '-')}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <span className="text-sm text-base-content/70">{tr('Kontonummer', 'Account number')}</span>
+                                        <span className="font-medium">{String(submittedByUser?.account_number || '-')}</span>
+                                    </div>
                                     <div className="rounded-box bg-base-200 p-3">
                                         <p className="text-sm text-base-content/70 mb-1">{tr('Anledning', 'Reason')}</p>
                                         <p className="text-sm">{String(receipt.anledning || '-')}</p>
-                                    </div>
-
-                                    <div className="divider my-1" />
-
-                                    <div className="rounded-box bg-base-200 p-3 space-y-2">
-                                        <p className="text-sm text-base-content/70">{tr('Inskickat av', 'Submitted by')}</p>
-                                        <p className="font-medium">{String(submittedByUser?.name || submittedByUser?.email || '-')}</p>
-                                        {submittedByUser?.email && (
-                                            <p className="text-sm text-base-content/80 break-all">{String(submittedByUser.email)}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="rounded-box bg-base-200 p-3 space-y-2">
-                                        <p className="text-sm text-base-content/70">{tr('Bankuppgifter', 'Bank details')}</p>
-                                        <div className="flex items-center justify-between gap-4">
-                                            <span className="text-sm text-base-content/70">{tr('Bank', 'Bank')}</span>
-                                            <span className="font-medium">{String(submittedByUser?.bank_name || '-')}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between gap-4">
-                                            <span className="text-sm text-base-content/70">{tr('Kontonummer', 'Account number')}</span>
-                                            <span className="font-medium">{String(submittedByUser?.account_number || '-')}</span>
-                                        </div>
                                     </div>
 
                                     {hasAdminViewAccess && submittedByUserId && (
