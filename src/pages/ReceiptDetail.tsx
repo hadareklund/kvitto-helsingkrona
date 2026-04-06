@@ -261,6 +261,13 @@ function ReceiptDetail() {
                                 <h2 className="card-title">{tr('Information', 'Information')}</h2>
                                 <div className="divider my-1" />
                                 <div className="space-y-3">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <span className="text-sm text-base-content/70">{tr('Inskickat av', 'Submitted by')}</span>
+                                        <span className="font-medium text-right break-all">
+                                            {String(submittedByUser?.name || submittedByUser?.email || '-')}
+                                            {submittedByUser?.email && submittedByUser?.name ? ` (${String(submittedByUser.email)})` : ''}
+                                        </span>
+                                    </div>
                                     <div className="flex items-center justify-between gap-4">
                                         <span className="text-sm text-base-content/70">{tr('Datum', 'Date')}</span>
                                         <span className="font-medium">{formatDate(receipt.date_for_slabb)}</span>
@@ -282,13 +289,6 @@ function ReceiptDetail() {
                                     <div className="flex items-center justify-between gap-4">
                                         <span className="text-sm text-base-content/70">{tr('Kvittonummer', 'Receipt number')}</span>
                                         <span className="font-medium">{String(receipt.receipt_number || '-')}</span>
-                                    </div>
-                                    <div className="flex items-start justify-between gap-4">
-                                        <span className="text-sm text-base-content/70">{tr('Inskickat av', 'Submitted by')}</span>
-                                        <span className="font-medium text-right break-all">
-                                            {String(submittedByUser?.name || submittedByUser?.email || '-')}
-                                            {submittedByUser?.email && submittedByUser?.name ? ` (${String(submittedByUser.email)})` : ''}
-                                        </span>
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
                                         <span className="text-sm text-base-content/70">{tr('Bank', 'Bank')}</span>
@@ -366,12 +366,13 @@ function ReceiptDetail() {
                                                 )}
                                             </div>
 
-                                            {canEditComment && shouldShowEditor && isCommentDirty && (
+                                            {canEditComment && shouldShowEditor && (
                                                 <div className="mt-3 flex flex-wrap items-center gap-2">
                                                     <button
                                                         onClick={handleSaveComment}
-                                                        className="btn btn-sm bg-amber-300 border-amber-400 text-amber-950 hover:bg-amber-200"
-                                                        disabled={isSavingComment}
+                                                        className={`btn btn-sm bg-amber-300 border-amber-400 text-amber-950 hover:bg-amber-200 ${!isCommentDirty || isSavingComment ? 'opacity-50 cursor-not-allowed' : ''
+                                                            }`}
+                                                        disabled={!isCommentDirty || isSavingComment}
                                                     >
                                                         {isSavingComment ? tr('Sparar...', 'Saving...') : tr('Spara kommentar', 'Save comment')}
                                                     </button>
