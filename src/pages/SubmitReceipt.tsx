@@ -15,11 +15,19 @@ function SubmitReceipt() {
     const [receiptImage, setReceiptImage] = useState<File | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [warning, setWarning] = useState('');
     const [success, setSuccess] = useState(false);
 
     const { user, isLoading: isAuthLoading } = useAuth();
     const { tr } = useLanguage();
     const navigate = useNavigate();
+
+    const hasMissingBankDetails = (profile: unknown) => {
+        const record = (profile || {}) as Record<string, unknown>;
+        const bankName = String(record.bank_name || '').trim();
+        const accountNumber = String(record.account_number || '').trim();
+        return !bankName || !accountNumber;
+    };
 
     const slabbOptions = [
         'Bak/Tvätt',
@@ -44,6 +52,7 @@ function SubmitReceipt() {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError('');
+        setWarning('');
         setSuccess(false);
 
         if (!user) {
@@ -56,9 +65,34 @@ function SubmitReceipt() {
             return;
         }
 
+        if (hasMissingBankDetails(user)) {
+            setWarning(
+                tr(
+                    'Dina bankuppgifter saknas, vänligen skriv in. Eller vill du inte ha pengarna? Skriv gärna in SEB 5226 1234435',
+                    'Your bank details are missing, please fill them in. Or do you not want the money? Please enter SEB 5226 1234435'
+                )
+            );
+            return;
+        }
+
         setIsLoading(true);
 
         try {
+            if (!DEV_AUTH_BYPASS) {
+                const profile = await pb.collection('receipt_user').getOne(user.id);
+
+                if (hasMissingBankDetails(profile)) {
+                    setWarning(
+                        tr(
+                            'Dina bankuppgifter saknas, vänligen skriv in. Eller vill du inte ha pengarna? Skriv gärna in SEB 5226 1234435',
+                            'Your bank details are missing, please fill them in. Or do you not want the money? Please enter SEB 5226 1234435'
+                        )
+                    );
+                    setIsLoading(false);
+                    return;
+                }
+            }
+
             if (DEV_AUTH_BYPASS) {
                 setSuccess(true);
                 setAmount('');
@@ -156,6 +190,19 @@ function SubmitReceipt() {
                     {error && (
                         <div className="alert alert-error mb-6">
                             <p className="text-sm">{error}</p>
+                        </div>
+                    )}
+
+                    {warning && (
+                        <div className="alert alert-warning mb-6">
+                            <p className="text-sm">{warning}</p>
+                            <button
+                                type="button"
+                                className="btn btn-xs btn-warning"
+                                onClick={() => navigate('/settings')}
+                            >
+                                {tr('Gå till inställningar', 'Go to settings')}
+                            </button>
                         </div>
                     )}
 

@@ -12,16 +12,28 @@ function Login() {
     const [passwordSetupError, setPasswordSetupError] = useState('');
     const [isPasswordSetupLoading, setIsPasswordSetupLoading] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const { login, requestPasswordSetup, isAuthenticated } = useAuth();
+    const { user, login, requestPasswordSetup, isAuthenticated } = useAuth();
     const { tr } = useLanguage();
     const navigate = useNavigate();
+
+    const hasMissingBankDetails = (profile: unknown) => {
+        const record = (profile || {}) as Record<string, unknown>;
+        const bankName = String(record.bank_name || '').trim();
+        const accountNumber = String(record.account_number || '').trim();
+        return !bankName || !accountNumber;
+    };
 
     useEffect(() => {
         // Redirect if already authenticated
         if (isAuthenticated) {
+            if (hasMissingBankDetails(user)) {
+                navigate('/settings');
+                return;
+            }
+
             navigate('/dashboard');
         }
-    }, [isAuthenticated, navigate]);
+    }, [isAuthenticated, user, navigate]);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -31,6 +43,11 @@ function Login() {
         const result = await login(email, password);
 
         if (result.success) {
+            if (hasMissingBankDetails(result.user)) {
+                navigate('/settings');
+                return;
+            }
+
             navigate('/dashboard');
         } else {
             setError(tr('Felaktig e-post eller lösenord', 'Incorrect email or password'));
